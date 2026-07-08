@@ -3,7 +3,7 @@
 import * as React from "react";
 import type { Mermaid } from "mermaid";
 import { cn } from "@/lib/utils";
-import { MDS } from "@/config/brand";
+import { IZII } from "@/config/brand";
 
 let mermaidPromise: Promise<Mermaid> | null = null;
 
@@ -16,17 +16,17 @@ async function loadMermaid(): Promise<Mermaid> {
         securityLevel: "strict",
         theme: "base",
         themeVariables: {
-          primaryColor: "#e8f6fd",
-          primaryTextColor: MDS.navy,
-          primaryBorderColor: MDS.blue,
+          primaryColor: "#EEF7D8",
+          primaryTextColor: IZII.charcoal,
+          primaryBorderColor: IZII.green,
           lineColor: "#94a3b8",
           secondaryColor: "#f1f5f9",
           tertiaryColor: "#f8fafc",
           background: "#ffffff",
-          mainBkg: "#e8f6fd",
-          nodeBorder: MDS.blue,
+          mainBkg: "#EEF7D8",
+          nodeBorder: IZII.green,
           clusterBkg: "#f8fafc",
-          titleColor: MDS.navy,
+          titleColor: IZII.charcoal,
           edgeLabelBackground: "#ffffff"
         },
         fontFamily: '"Elms Sans", system-ui, sans-serif'
