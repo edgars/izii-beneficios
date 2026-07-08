@@ -1,0 +1,7 @@
+# Imagem de desenvolvimento do devportal: apenas Node.
+# As dependencias sao instaladas em runtime num volume nomeado (ver
+# docker-compose.dev.yml) e o `next dev` roda com HMR (hot reload).
+# Nao usar em producao — para prod, use o Dockerfile (standalone).
+FROM node:20-alpine
+WORKDIR /app
+EXPOSE 3000

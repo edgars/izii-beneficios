@@ -1,0 +1,76 @@
+---
+title: Postman — Coleção Orquestrador (legado)
+description: Baixe a coleção Postman v2.1 para testar o contrato legado (POST) do Orquestrador — autenticação e realizar integração (Inclusão).
+order: 3
+---
+
+## Visão geral
+
+Esta página disponibiliza a **coleção Postman** usada para chamar o Orquestrador
+no modelo **legado** (endpoints `POST` em `/api/orquestrador/...`), alinhado ao
+[Manual de Orientação Técnica](/manual-orquestrador.pdf) e à página
+[Acesso Direto ao Orquestrador Izzi](/docs/orquestrador-izzi).
+
+Para integrações novas, prefira a [Referência REST](/docs/referencia-rest) e a
+spec em [`/izzi-rest`](/izzi-rest).
+
+## Download
+
+Ficheiro **Collection v2.1** (JSON), pronto para **Import → Raw text** no Postman
+ou para arrastar para a janela do Postman:
+
+<p className="mt-6">
+  <a
+    href="/postman/Orquestrador.postman_collection.json"
+    download="Orquestrador.postman_collection.json"
+    className="inline-flex items-center gap-2 rounded-lg bg-mds-navy px-4 py-2.5 text-sm font-medium text-white shadow hover:opacity-95"
+  >
+    Descarregar Orquestrador.postman_collection.json
+  </a>
+</p>
+
+[Abrir em nova aba (pré-visualizar JSON)](/postman/Orquestrador.postman_collection.json)
+
+## O que a coleção inclui
+
+| Pasta / pedido | Método | URL (variável `{{baseURL}}`) |
+|---|---|---|
+| **Realizar Integração → Inclusão** | `POST` | `{{baseURL}}api/orquestrador/realizar-integracao` |
+| **Auth - Gerar Token** | `POST` | `{{baseURL}}api/orquestrador/gerar-jwt-para-acesso` |
+
+O pedido **Auth - Gerar Token** inclui um script de teste que grava o token na
+variável de coleção `authorization_token` a partir de `response.token`, para
+reutilizar no `Authorization: Bearer {{authorization_token}}` do pedido de
+integração.
+
+## Variáveis da coleção
+
+Configure no Postman (**Collection → Variables**):
+
+| Variável | Uso |
+|---|---|
+| `baseURL` | Prefixo do host (ex.: `https://seu-host:44304/` — inclua barra final se os paths da coleção o assumirem). |
+| `clientId` | Credencial do cliente (contrato legado do gerador de JWT). |
+| `clientSecret` | Segredo do cliente. |
+| `tenantId` | Identificador do inquilino. |
+| `authorization_token` | Preenchido automaticamente após correr **Auth - Gerar Token** (script de teste). |
+
+> **Nota:** A API REST documentada em `/izzi-rest` usa `consumerKey`,
+> `consumerSecret` e `tenantId` em `POST /v1/auth/token`. Esta coleção legada
+> usa `clientId` / `clientSecret` no corpo do `gerar-jwt-para-acesso` — alinhe
+> com o ambiente que estiver a testar (mock, gateway ou backend real).
+
+## Passos rápidos no Postman
+
+1. **Importar** o JSON descarregado acima.
+2. Ajustar **`baseURL`** (e credenciais) às variáveis da coleção.
+3. Executar **Auth - Gerar Token** e confirmar que `authorization_token` foi
+   atualizada (aba *Variables* ou consola de testes).
+4. Executar **Inclusão** (ou duplicar o pedido para outros movimentos, se
+   aplicável).
+
+## Ficheiro no repositório
+
+A mesma coleção está versionada em
+`services/devportal/public/postman/Orquestrador.postman_collection.json` (servida
+estaticamente por este portal em `/postman/Orquestrador.postman_collection.json`).

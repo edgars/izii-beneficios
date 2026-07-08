@@ -1,0 +1,115 @@
+{
+    "$schema": "https://www.krakend.io/schema/v3.0/krakend.json",
+    "version": 3,
+    "name": "IZII API Gateway",
+    "port": 8080,
+    "timeout": "3000ms",
+    "cache_ttl": "300s",
+    "host": [
+      "https://api.izii.com.br/v2"
+    ],
+    "endpoints": [
+      {
+        "endpoint": "/v2/beneficiarios",
+        "method": "POST",
+        "output_encoding": "json",
+        "input_headers": [
+          "X-CNPJ-Provedor",
+          "X-Origem",
+          "Authorization",
+          "Content-Type"
+        ],
+        "backend": [
+          {
+            "url_pattern": "/beneficiarios",
+            "method": "POST"
+          }
+        ]
+      },
+      {
+        "endpoint": "/v2/beneficiarios",
+        "method": "GET",
+        "output_encoding": "json",
+        "input_headers": [
+          "Authorization"
+        ],
+        "input_query_strings": [
+          "cpf",
+          "apolice",
+          "cia",
+          "subfatura",
+          "dataMovimentacaoApolice",
+          "pagina",
+          "quantidadePorPagina"
+        ],
+        "backend": [
+          {
+            "url_pattern": "/beneficiarios",
+            "method": "GET"
+          }
+        ]
+      },
+      {
+        "endpoint": "/v2/beneficiarios/{id}",
+        "method": "PUT",
+        "output_encoding": "json",
+        "input_headers": [
+          "X-CNPJ-Provedor",
+          "Authorization",
+          "Content-Type"
+        ],
+        "backend": [
+          {
+            "url_pattern": "/beneficiarios/{id}",
+            "method": "PUT"
+          }
+        ]
+      },
+      {
+        "endpoint": "/v2/beneficiarios/{id}",
+        "method": "DELETE",
+        "output_encoding": "json",
+        "input_headers": [
+          "X-CNPJ-Provedor",
+          "Authorization",
+          "Content-Type"
+        ],
+        "backend": [
+          {
+            "url_pattern": "/beneficiarios/{id}",
+            "method": "DELETE"
+          }
+        ]
+      },
+      {
+        "endpoint": "/v2/beneficiarios/{id}/plano",
+        "method": "PATCH",
+        "output_encoding": "json",
+        "input_headers": [
+          "Authorization",
+          "Content-Type"
+        ],
+        "backend": [
+          {
+            "url_pattern": "/beneficiarios/{id}/plano",
+            "method": "PATCH"
+          }
+        ]
+      },
+      {
+        "endpoint": "/v2/beneficiarios/{id}/reativacao",
+        "method": "POST",
+        "output_encoding": "json",
+        "input_headers": [
+          "Authorization",
+          "Content-Type"
+        ],
+        "backend": [
+          {
+            "url_pattern": "/beneficiarios/{id}/reativacao",
+            "method": "POST"
+          }
+        ]
+      }
+    ]
+  }

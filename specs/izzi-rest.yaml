@@ -1,0 +1,1083 @@
+openapi: 3.0.3
+info:
+  title: IZII MDS — Orquestrador de Benefícios (REST)
+  version: "2.0.0"
+  description: |
+    API **RESTful** do Orquestrador de Benefícios da Izii — o *Hub de Integração
+    (Facade/Adapter)* que abstrai a comunicação com as operadoras de saúde e
+    odontológicas (Bradesco, SulAmérica, Unimed, Amil, etc.).
+
+    Esta especificação é a versão **100% REST** do contrato descrito no
+    *Manual de Orientação Técnica — API Orquestrador*. Em vez de um único endpoint
+    `POST` com um campo `movimento` (I/A/E/C), cada intenção de movimentação
+    cadastral é expressa pelo **verbo HTTP** e por um **recurso** próprio:
+
+    | Movimento (legado)        | Verbo REST | Recurso                                   |
+    |---------------------------|------------|-------------------------------------------|
+    | `I` Inclusão              | `POST`     | `/v1/beneficiarios`                        |
+    | `A` Alteração             | `PATCH`    | `/v1/beneficiarios/{id}`                   |
+    | `E` Exclusão              | `DELETE`   | `/v1/beneficiarios/{id}`                   |
+    | `C` Consulta (cadastro)   | `GET`      | `/v1/beneficiarios` · `/v1/beneficiarios/{id}` |
+    | Buscar movimentações      | `GET`      | `/v1/movimentacoes` · `/v1/movimentacoes/{id}` |
+
+    > Troca de Plano (`T`) e Reativação (`R`) ainda não são suportadas pelo
+    > Orquestrador (retornam "Movimento inválido"); serão expostas quando o
+    > backend habilitar.
+
+    ## Autenticação
+    A entrada exige `consumerKey`, `consumerSecret` e `tenantId`, que geram um
+    **token JWT** temporário (validade de 2 horas). O token deve ser enviado no
+    header `Authorization: Bearer <token>` em todos os endpoints de negócio.
+    Veja `POST /v1/auth/token`.
+
+    ## Multi-tenancy e roteamento
+    - O **inquilino** (`tenantId`) é resolvido a partir do token JWT.
+    - A **operadora de destino** é informada no header `X-Cnpj-Provedor`
+      (CNPJ da operadora — ex. SulAmérica `01685053000156`), que atua como
+      *chave de roteamento* (padrão Mediator).
+
+    ## Padronização de respostas
+    Independentemente do formato devolvido por cada operadora (XML legado, JSON
+    da SulAmérica, etc.), o Orquestrador converte tudo para schemas padronizados.
+    Operações de escrita retornam um `MovimentacaoResultado` com `protocolo`,
+    `status` e a lista de `criticas` (validações de negócio). Erros seguem o
+    schema `Erro`.
+
+servers:
+  - url: http://localhost:8080
+    description: Dev local (KrakenD → mock-orquestrador)
+  - url: https://api.izii.com.br
+    description: Produção
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Autenticação
+    description: Geração de token JWT a partir de consumer-key / consumer-secret.
+  - name: Beneficiários
+    description: |
+      Cadastro de vidas (titulares e dependentes). Cada verbo HTTP representa
+      um tipo de movimentação cadastral na operadora de destino.
+  - name: Movimentações
+    description: |
+      Consulta passiva (*tracking*) do status e histórico das movimentações
+      cadastrais enviadas previamente para as operadoras.
+  - name: Rede Credenciada
+    description: Consulta de locais de atendimento e redes credenciadas.
+  - name: Faturas
+    description: Baixa e interpretação automatizada (RPA) de faturas.
+  - name: Webhooks
+    description: Callbacks assíncronos enviados pelas operadoras.
+
+paths:
+  # ---------------------------------------------------------------------------
+  # AUTENTICAÇÃO
+  # ---------------------------------------------------------------------------
+  /v1/auth/token:
+    post:
+      tags: [Autenticação]
+      summary: Gerar token JWT de acesso
+      operationId: criarToken
+      security: []   # endpoint público ([AllowAnonymous])
+      # JSON in: a platform-api recebe {client_id, client_secret}, troca no Keycloak
+      # (client_credentials) e devolve o access_token real (que o gateway valida).
+      x-backend: /v1/auth/token
+      x-backend-host: platform-api   # tira o mock do caminho de auth
+      description: |
+        Porta de entrada da API. Envie `client_id` e `client_secret` em **JSON**;
+        a API troca no Keycloak (`client_credentials`) e devolve um **token JWT**
+        (validade ~2h).
+
+        **Formato:** corpo `application/json` com `client_id` e `client_secret`.
+        Use o `access_token` retornado como `Authorization: Bearer <token>` nas
+        demais chamadas. Único endpoint que não exige token prévio.
+
+        > Nota: o mapeamento `consumerKey/consumerSecret/tenantId` virá quando a
+        > platform-api fizer a tradução de multi-tenant. Hoje: `client_id`/`client_secret`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [client_id, client_secret]
+              properties:
+                client_id:
+                  type: string
+                  example: mds-client
+                client_secret:
+                  type: string
+                  example: mds-secret-dev
+            examples:
+              padrao:
+                summary: Solicitar token
+                value:
+                  client_id: mds-client
+                  client_secret: mds-secret-dev
+      responses:
+        '200':
+          description: Token gerado com sucesso (resposta do Keycloak).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token: { type: string }
+                  token_type: { type: string, example: Bearer }
+                  expires_in: { type: integer, example: 7200 }
+              examples:
+                padrao:
+                  value:
+                    access_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    token_type: "Bearer"
+                    expires_in: 7200
+        '401':
+          description: Credenciais inválidas (client_id/client_secret incorretos).
+
+  # ---------------------------------------------------------------------------
+  # BENEFICIÁRIOS (coleção)
+  # ---------------------------------------------------------------------------
+  /v1/beneficiarios:
+    get:
+      tags: [Beneficiários]
+      summary: Listar / buscar beneficiários
+      operationId: listarBeneficiarios
+      x-backend: /api/orquestrador/buscar-beneficiarios
+      x-backend-host: platform-api   # roteia p/ a fachada (traduz -> Orquestrador real)
+      description: |
+        Consulta o cadastro de beneficiários (vidas) na operadora de destino.
+        Equivale ao movimento `C` (Consulta) do contrato legado. Os filtros
+        disponíveis dependem da operadora; os mais comuns estão abaixo.
+      parameters:
+        - $ref: '#/components/parameters/CnpjProvedor'
+        - name: cpf
+          in: query
+          description: CPF do titular para filtrar.
+          schema: { type: string }
+        - name: cpfDependente
+          in: query
+          description: CPF de um dependente específico.
+          schema: { type: string }
+        - name: nome
+          in: query
+          description: Nome (ou parte) do beneficiário.
+          schema: { type: string }
+        - name: apolice
+          in: query
+          description: Número da apólice/contrato.
+          schema: { type: string }
+        - name: empresa
+          in: query
+          description: CNPJ ou identificador da empresa estipulante.
+          schema: { type: string }
+        - name: carteirinha
+          in: query
+          description: Número da carteirinha.
+          schema: { type: string }
+        - name: uf
+          in: query
+          description: UF para filtrar.
+          schema: { type: string }
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/QuantidadePorPagina'
+      responses:
+        '200':
+          description: Lista paginada de beneficiários.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaBeneficiarios'
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+
+    post:
+      tags: [Beneficiários]
+      summary: Incluir beneficiário (movimento I)
+      operationId: incluirBeneficiario
+      x-backend: /api/orquestrador/realizar-integracao
+      x-backend-host: platform-api   # roteia p/ a fachada (traduz -> Orquestrador real)
+      x-movimento: "I"
+      description: |
+        **Inclusão** de uma vida (titular ou dependente) na operadora de destino.
+        Equivale ao movimento `I` do contrato legado.
+
+        Retorna **201 Created** com o `MovimentacaoResultado`, contendo o
+        `protocolo` de rastreio e eventuais `criticas` de validação da operadora.
+        O header `Location` aponta para o recurso criado quando a operadora
+        devolve um identificador de imediato.
+      parameters:
+        - $ref: '#/components/parameters/CnpjProvedor'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeneficiarioInclusao'
+            examples:
+              titular:
+                summary: Incluir titular
+                value:
+                  nome: "João dos Santos e Silva"
+                  cpf: "35999999960"
+                  dataNascimento: "1990-05-21"
+                  grauParentesco: "0"
+                  estadoCivil: "S"
+                  sexo: "M"
+                  dataAdesao: "2026-04-19"
+                  dataAdmissao: "2026-01-15"
+                  endereco:
+                    cep: "01310100"
+                    logradouro: "Av. Paulista"
+                    numero: "1000"
+                    bairro: "Bela Vista"
+                    municipio: "São Paulo"
+                    uf: "SP"
+                  contato:
+                    email: "joao@empresa.com"
+                    dddCelular: "11"
+                    celular: "999999999"
+                  produto:
+                    contrato: "1234"
+                    codigo: "PLAN-001"
+                  apolice:
+                    cia: "570"
+                    numero: "123456789"
+                  tipoProduto: "SAUDE"
+      responses:
+        '201':
+          description: Inclusão registrada / enviada à operadora.
+          headers:
+            Location:
+              description: URI do beneficiário criado (quando disponível).
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovimentacaoResultado'
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+        '422': { $ref: '#/components/responses/RegraDeNegocio' }
+
+  # ---------------------------------------------------------------------------
+  # BENEFICIÁRIOS (item)
+  # ---------------------------------------------------------------------------
+  /v1/beneficiarios/{id}:
+    parameters:
+      - $ref: '#/components/parameters/BeneficiarioId'
+      - $ref: '#/components/parameters/CnpjProvedor'
+    get:
+      tags: [Beneficiários]
+      summary: Obter beneficiário
+      operationId: obterBeneficiario
+      # Orquestrador não tem endpoint singular; consulta-se via buscar-beneficiarios
+      # (plural) com o {id} no filtro consulta.cpf (verificado ao vivo: 200).
+      x-backend: /api/orquestrador/buscar-beneficiarios
+      x-backend-host: platform-api   # roteia p/ a fachada (traduz -> Orquestrador real)
+      x-consulta-id: cpf
+      description: Retorna os dados cadastrais de um beneficiário específico.
+      responses:
+        '200':
+          description: Beneficiário encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beneficiario'
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+    patch:
+      tags: [Beneficiários]
+      summary: Alterar beneficiário (movimento A)
+      operationId: alterarBeneficiario
+      x-backend: /api/orquestrador/realizar-integracao
+      x-backend-host: platform-api   # roteia p/ a fachada (traduz -> Orquestrador real)
+      x-movimento: "A"
+      x-consulta-id: cpf             # {id} entra no objeto alteracao como cpf
+      description: |
+        **Alteração** parcial de dados cadastrais. Equivale ao movimento `A`.
+        Envie **apenas os campos alterados** — os demais permanecem inalterados.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeneficiarioAlteracao'
+            examples:
+              endereco:
+                summary: Atualizar endereço e contato
+                value:
+                  dataEvento: "2026-06-10"
+                  endereco:
+                    cep: "04567000"
+                    logradouro: "Rua Nova"
+                    numero: "55"
+                    municipio: "São Paulo"
+                    uf: "SP"
+                  contato:
+                    email: "joao.novo@empresa.com"
+      responses:
+        '200':
+          description: Alteração processada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovimentacaoResultado'
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '422': { $ref: '#/components/responses/RegraDeNegocio' }
+
+    delete:
+      tags: [Beneficiários]
+      summary: Excluir beneficiário (movimento E)
+      operationId: excluirBeneficiario
+      x-backend: /api/orquestrador/realizar-integracao
+      x-backend-host: platform-api   # roteia p/ a fachada (traduz -> Orquestrador real)
+      x-movimento: "E"
+      x-consulta-id: cpf             # {id} entra no objeto exclusao como cpf
+      description: |
+        **Exclusão** da vida na operadora de destino. Equivale ao movimento `E`.
+        Os campos da exclusão vão no **corpo** (objeto `exclusao` do Orquestrador).
+        A SulAmérica exige `matriculaEmpresa` + `produto` + `codigoRDP` e uma
+        `dataExclusao` permitida (regra de negócio da operadora).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [motivoExclusao, dataExclusao]
+              properties:
+                motivoExclusao: { type: string, example: "1" }
+                dataExclusao: { type: string, format: date, example: "2026-07-19" }
+                matriculaEmpresa: { type: string, example: "484228150" }
+                codigoRDP: { type: string, example: "01" }
+                tipoProduto: { type: string, example: "SAUDE" }
+                flagContributario: { type: boolean, example: false }
+                produto:
+                  type: object
+                  properties:
+                    contrato: { type: string, example: "78043" }
+                    subContrato: { type: string, example: "8UV4F" }
+                    codigo: { type: string, example: "66181" }
+            example:
+              motivoExclusao: "1"
+              dataExclusao: "2026-07-19"
+              matriculaEmpresa: "484228150"
+              codigoRDP: "01"
+              tipoProduto: "SAUDE"
+              flagContributario: false
+              produto: { contrato: "78043", subContrato: "8UV4F", codigo: "66181" }
+      responses:
+        '200':
+          description: Exclusão processada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovimentacaoResultado'
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '422': { $ref: '#/components/responses/RegraDeNegocio' }
+
+  # ---------------------------------------------------------------------------
+  # MOVIMENTAÇÕES (tracking)
+  # ---------------------------------------------------------------------------
+  /v1/movimentacoes:
+    get:
+      tags: [Movimentações]
+      summary: Consultar status de movimentações
+      operationId: listarMovimentacoes
+      x-backend: /api/orquestrador/buscar-movimentacoes
+      x-backend-host: platform-api   # roteia p/ a fachada (traduz -> Orquestrador real)
+      description: |
+        *Tracking* passivo do status e histórico das movimentações cadastrais
+        (inclusões, alterações, exclusões) enviadas previamente. O Orquestrador
+        consulta a operadora e traduz o retorno para um formato unificado.
+
+        Recomenda-se executar movimentações e buscas de forma **intercalada**,
+        respeitando o tempo de processamento da operadora.
+      parameters:
+        - $ref: '#/components/parameters/CnpjProvedor'
+        - name: apolice
+          in: query
+          description: Número da apólice/contrato.
+          schema: { type: string }
+        - name: empresa
+          in: query
+          description: CNPJ/identificador da empresa estipulante.
+          schema: { type: string }
+        - name: cpf
+          in: query
+          description: CPF do titular.
+          schema: { type: string }
+        - name: cpfDependente
+          in: query
+          description: CPF de um dependente específico.
+          schema: { type: string }
+        - name: dataMovimentacao
+          in: query
+          description: Data (ou início do período) da movimentação (YYYY-MM-DD).
+          schema: { type: string, format: date }
+        - name: status
+          in: query
+          description: Filtra por status da movimentação.
+          schema:
+            type: string
+            enum: [EmAnalise, Processado, Rejeitado]
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/QuantidadePorPagina'
+      responses:
+        '200':
+          description: Lista paginada de movimentações com status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaMovimentacoes'
+              examples:
+                resultado:
+                  value:
+                    data:
+                      - id: "mov-1"
+                        protocolo: "888999900001111"
+                        nome: "João da Silva"
+                        cpf: "12345678900"
+                        tipoMovimento: "Inclusão"
+                        dataMovimentacao: "2026-04-01T10:30:00Z"
+                        statusMovimentacao: "Processado com Sucesso"
+                        numeroCarteirinha: "888999900001111"
+                        criticas: []
+                      - id: "mov-2"
+                        protocolo: null
+                        nome: "Maria da Silva (Dependente)"
+                        cpf: "09876543211"
+                        tipoMovimento: "Inclusão"
+                        dataMovimentacao: "2026-04-01T10:30:00Z"
+                        statusMovimentacao: "Rejeitado"
+                        numeroCarteirinha: null
+                        criticas:
+                          - codigo: "VAL-031"
+                            campo: "dataNascimento"
+                            mensagem: "Data de nascimento incompatível com o grau de parentesco informado."
+                    paginacao:
+                      pagina: 1
+                      quantidadePorPagina: 50
+                      total: 2
+                      totalPaginas: 1
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+
+  /v1/movimentacoes/{id}:
+    get:
+      tags: [Movimentações]
+      summary: Obter status de uma movimentação
+      operationId: obterMovimentacao
+      # Orquestrador não tem endpoint singular; consulta-se via buscar-movimentacoes
+      # (plural) com o {id}=protocolo no filtro consulta.codigoMovimentacao (verificado ao vivo: 200).
+      x-backend: /api/orquestrador/buscar-movimentacoes
+      x-backend-host: platform-api   # roteia p/ a fachada (traduz -> Orquestrador real)
+      x-consulta-id: codigoMovimentacao
+      description: Retorna o status atual de uma movimentação pelo seu protocolo/ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Protocolo/ID da movimentação.
+          schema: { type: string }
+        - $ref: '#/components/parameters/CnpjProvedor'
+      responses:
+        '200':
+          description: Movimentação encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movimentacao'
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+  # ---------------------------------------------------------------------------
+  # REDE CREDENCIADA
+  # ---------------------------------------------------------------------------
+  /v1/locais:
+    get:
+      tags: [Rede Credenciada]
+      summary: Listar locais de atendimento
+      operationId: listarLocais
+      x-backend: /api/orquestrador/buscar-locais
+      x-backend-host: platform-api   # roteia p/ a fachada (traduz -> Orquestrador real)
+      description: Retorna locais de atendimento / rede credenciada de uma operadora.
+      parameters:
+        - $ref: '#/components/parameters/CnpjProvedor'
+        - name: uf
+          in: query
+          description: UF para filtrar locais.
+          schema: { type: string }
+        - name: municipio
+          in: query
+          description: Município para filtrar.
+          schema: { type: string }
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/QuantidadePorPagina'
+      responses:
+        '200':
+          description: Lista de locais de atendimento.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { type: object }
+                  paginacao:
+                    $ref: '#/components/schemas/Paginacao'
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+
+  # ---------------------------------------------------------------------------
+  # FATURAS
+  # ---------------------------------------------------------------------------
+  /v1/faturas/baixas:
+    post:
+      tags: [Faturas]
+      summary: Registrar baixa de fatura
+      operationId: registrarBaixaFatura
+      x-backend: /api/orquestrador/baixa-de-fatura
+      x-backend-host: platform-api   # roteia p/ a fachada (traduz -> Orquestrador real)
+      description: Registra a baixa (quitação) de uma fatura de operadora.
+      parameters:
+        - $ref: '#/components/parameters/CnpjProvedor'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaixaDeFatura'
+            examples:
+              padrao:
+                value:
+                  cnpjCliente: "33055146000193"
+                  contrato:
+                    codigo: "1234"
+                    acesso:
+                      usuario: "robo-rpa"
+                      senha: "***"
+      responses:
+        '201':
+          description: Baixa registrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovimentacaoResultado'
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+
+  /v1/faturas/interpretacoes:
+    post:
+      tags: [Faturas]
+      summary: Interpretar fatura (RPA)
+      operationId: interpretarFatura
+      x-backend: /api/interpretador/fatura
+      x-backend-host: platform-api   # roteia p/ a fachada (traduz -> Orquestrador real)
+      description: |
+        Envia uma fatura (PDF em base64 ou `link`) para interpretação
+        automatizada por robôs (RPA), usada quando a operadora não possui
+        APIs públicas. Retorna os dados extraídos da fatura.
+      parameters:
+        - $ref: '#/components/parameters/CnpjProvedor'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InterpretacaoDeFatura'
+            examples:
+              porLink:
+                summary: Interpretar via link
+                value:
+                  cnpjCliente: "33055146000193"
+                  contrato: "1234"
+                  mes: "05"
+                  ano: "2026"
+                  valorFatura: 15000.00
+                  link: "https://storage.operadora.com.br/faturas/maio-2026.pdf"
+      responses:
+        '201':
+          description: Fatura interpretada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovimentacaoResultado'
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutorizado' }
+
+  # ---------------------------------------------------------------------------
+  # WEBHOOKS
+  # ---------------------------------------------------------------------------
+  /v1/webhooks/operadoras/{operadora}:
+    post:
+      tags: [Webhooks]
+      summary: Receber callback assíncrono de operadora
+      operationId: receberWebhookOperadora
+      security: []   # endpoint público (autenticação por assinatura/origem)
+      x-backend: /webhook/izii/mds
+      description: |
+        Recebe callbacks assíncronos das operadoras (ex. SulAmérica) após o
+        processamento de movimentações. O Orquestrador traduz o status e o
+        propaga ao sistema cliente. Endpoint **público**.
+      parameters:
+        - name: operadora
+          in: path
+          required: true
+          description: Identificador da operadora de origem.
+          schema:
+            type: string
+            enum: [sulamerica, bradesco, unimed, amil]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookOperadora'
+            examples:
+              aprovada:
+                value:
+                  codMovBenef: 1
+                  matricula: "12345678"
+                  nmeCompleto: "João dos Santos e Silva"
+                  movimentacao: "I"
+                  status: "Aprovado"
+                  criticas: []
+      responses:
+        '200':
+          description: Callback recebido.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  received: { type: boolean }
+
+# =============================================================================
+# COMPONENTS
+# =============================================================================
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Token JWT obtido em `POST /v1/auth/token` trocando
+        `consumerKey` + `consumerSecret` + `tenantId`. Validade de 2 horas.
+        Envie como `Authorization: Bearer <token>`.
+
+  parameters:
+    CnpjProvedor:
+      name: X-Cnpj-Provedor
+      in: header
+      required: true
+      description: |
+        CNPJ da operadora de destino, atua como **chave de roteamento**
+        (padrão Mediator). Ex.: SulAmérica `01685053000156`.
+      schema: { type: string }
+      example: "01685053000156"
+    BeneficiarioId:
+      name: id
+      in: path
+      required: true
+      description: |
+        Identificador do beneficiário. Aceita o `guidProdutoBeneficiario`,
+        o CPF ou a matrícula, conforme suportado pela operadora.
+      schema: { type: string }
+    Pagina:
+      name: pagina
+      in: query
+      description: Página (paginação). Inicia em 1.
+      schema: { type: integer, minimum: 1, default: 1 }
+    QuantidadePorPagina:
+      name: quantidadePorPagina
+      in: query
+      description: Quantidade de itens por página.
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+
+  responses:
+    RequisicaoInvalida:
+      description: Requisição malformada (campos obrigatórios ausentes/ inválidos).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    NaoAutorizado:
+      description: Token ausente, expirado ou inválido.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    NaoEncontrado:
+      description: Recurso não encontrado.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    RegraDeNegocio:
+      description: |
+        A operadora rejeitou a movimentação por uma regra de negócio
+        (ex. "CPF inválido", "Beneficiário inativo", "Fora da vigência").
+        Os detalhes vêm em `criticas` / `validacoes`.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/MovimentacaoResultado' }
+
+  schemas:
+    # ---- Autenticação ----
+    CredenciaisAcesso:
+      type: object
+      required: [consumerKey, consumerSecret, tenantId]
+      description: Credenciais do cliente para obtenção do token JWT.
+      properties:
+        consumerKey:
+          type: string
+          description: Identificador único do cliente (consumer-key).
+        consumerSecret:
+          type: string
+          description: Chave secreta do cliente (consumer-secret).
+        tenantId:
+          type: string
+          description: Identificador do inquilino (cliente/empresa de destino).
+    Token:
+      type: object
+      description: Token JWT de acesso e seus metadados de validade.
+      properties:
+        token:
+          type: string
+          description: JWT codificado (Header.Payload.Signature).
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+          description: Validade em segundos (2 horas = 7200).
+          example: 7200
+        issuedAt:
+          type: string
+          format: date-time
+          description: Data/hora de criação do token.
+        expiresAt:
+          type: string
+          format: date-time
+          description: Data/hora exata de expiração (criação + 2h).
+
+    # ---- Sub-objetos compartilhados ----
+    Endereco:
+      type: object
+      properties:
+        cep: { type: string, nullable: true }
+        logradouro: { type: string, nullable: true }
+        numero: { type: string, nullable: true }
+        complemento: { type: string, nullable: true }
+        bairro: { type: string, nullable: true }
+        municipio: { type: string, nullable: true }
+        codMunicipio: { type: string, nullable: true }
+        uf: { type: string, nullable: true }
+    Contato:
+      type: object
+      properties:
+        email: { type: string, nullable: true }
+        dddCelular: { type: string, nullable: true }
+        celular: { type: string, nullable: true }
+        dddTelefone1: { type: string, nullable: true }
+        telefone1: { type: string, nullable: true }
+    DadosBancarios:
+      type: object
+      properties:
+        banco: { type: string, nullable: true }
+        agencia: { type: string, nullable: true }
+        digitoAgencia: { type: string, nullable: true }
+        conta: { type: string, nullable: true }
+        digitoConta: { type: string, nullable: true }
+        tipoConta: { type: string, nullable: true }
+    Produto:
+      type: object
+      description: Dados do plano/produto contratado.
+      properties:
+        contrato: { type: string, nullable: true }
+        carteirinha: { type: string, nullable: true }
+        subContrato: { type: string, nullable: true }
+        codigo: { type: string, nullable: true }
+        codigoRDP: { type: string, nullable: true }
+        dataAlteracaoPlano: { type: string, nullable: true }
+        dataInicioContrato: { type: string, nullable: true }
+        motivoAlteracao: { type: string, nullable: true }
+    Apolice:
+      type: object
+      properties:
+        cia: { type: string, nullable: true }
+        numero: { type: string, nullable: true }
+        subfatura: { type: string, nullable: true }
+
+    # ---- Requisições de movimentação ----
+    BeneficiarioInclusao:
+      type: object
+      required: [nome, cpf, dataNascimento, grauParentesco]
+      description: Dados de um beneficiário a incluir (titular ou dependente).
+      properties:
+        nome: { type: string }
+        nomeAbreviado: { type: string, nullable: true }
+        cpf: { type: string }
+        dataNascimento: { type: string, format: date }
+        grauParentesco:
+          type: string
+          description: "0 = titular; demais valores = graus de parentesco."
+        estadoCivil: { type: string, nullable: true }
+        sexo: { type: string, nullable: true }
+        nomeMae: { type: string, nullable: true }
+        rg: { type: string, nullable: true }
+        orgaoEmissor: { type: string, nullable: true }
+        dataExpedicaoRg: { type: string, nullable: true }
+        pisPasep: { type: string, nullable: true }
+        matriculaFuncionario: { type: string, nullable: true }
+        matriculaIzii: { type: string, nullable: true }
+        dataAdesao: { type: string, format: date, nullable: true }
+        dataAdmissao: { type: string, format: date, nullable: true }
+        dataEvento: { type: string, format: date, nullable: true }
+        endereco: { $ref: '#/components/schemas/Endereco' }
+        contato: { $ref: '#/components/schemas/Contato' }
+        dadosBancarios: { $ref: '#/components/schemas/DadosBancarios' }
+        produto: { $ref: '#/components/schemas/Produto' }
+        apolice: { $ref: '#/components/schemas/Apolice' }
+        tipoProduto:
+          type: string
+          nullable: true
+          description: "SAUDE, ODONTO ou VIDA."
+    BeneficiarioAlteracao:
+      type: object
+      description: Campos a alterar (enviar apenas os modificados).
+      properties:
+        identificador: { type: string, nullable: true }
+        cpf: { type: string, nullable: true }
+        matriculaFuncionario: { type: string, nullable: true }
+        dataEvento: { type: string, format: date, nullable: true }
+        nome: { type: string, nullable: true }
+        dataNascimento: { type: string, format: date, nullable: true }
+        endereco: { $ref: '#/components/schemas/Endereco' }
+        contato: { $ref: '#/components/schemas/Contato' }
+        dadosBancarios: { $ref: '#/components/schemas/DadosBancarios' }
+        produto: { $ref: '#/components/schemas/Produto' }
+        apolice: { $ref: '#/components/schemas/Apolice' }
+    TrocaPlano:
+      type: object
+      required: [produto]
+      description: Representação completa do novo plano do beneficiário.
+      properties:
+        cpf: { type: string, nullable: true }
+        matriculaFuncionario: { type: string, nullable: true }
+        dataNascimento: { type: string, nullable: true }
+        dataAdesao: { type: string, nullable: true }
+        endereco: { $ref: '#/components/schemas/Endereco' }
+        contato: { $ref: '#/components/schemas/Contato' }
+        produto: { $ref: '#/components/schemas/Produto' }
+    Reativacao:
+      type: object
+      description: Dados para reativação de um beneficiário excluído.
+      properties:
+        cpf: { type: string, nullable: true }
+        matriculaFuncionario: { type: string, nullable: true }
+        dataReativacao: { type: string, format: date, nullable: true }
+        produto: { $ref: '#/components/schemas/Produto' }
+
+    # ---- Recursos de leitura ----
+    Beneficiario:
+      type: object
+      description: Representação cadastral de um beneficiário.
+      properties:
+        id: { type: string }
+        nome: { type: string }
+        cpf: { type: string }
+        dataNascimento: { type: string, format: date, nullable: true }
+        grauParentesco: { type: string, nullable: true }
+        sexo: { type: string, nullable: true }
+        estadoCivil: { type: string, nullable: true }
+        numeroCarteirinha: { type: string, nullable: true }
+        status:
+          type: string
+          nullable: true
+          description: Situação cadastral na operadora (ex. Ativo, Inativo).
+        dataAdesao: { type: string, format: date, nullable: true }
+        endereco: { $ref: '#/components/schemas/Endereco' }
+        contato: { $ref: '#/components/schemas/Contato' }
+        produto: { $ref: '#/components/schemas/Produto' }
+        apolice: { $ref: '#/components/schemas/Apolice' }
+        tipoProduto: { type: string, nullable: true }
+    Movimentacao:
+      type: object
+      description: Status/histórico de uma movimentação cadastral.
+      properties:
+        id: { type: string }
+        protocolo:
+          type: string
+          nullable: true
+          description: Protocolo/ID de rastreio gerado pela operadora.
+        nome: { type: string, nullable: true }
+        cpf: { type: string, nullable: true }
+        tipoMovimento:
+          type: string
+          description: "Inclusão, Alteração, Exclusão, Troca de Plano, Reativação."
+        dataMovimentacao: { type: string, format: date-time, nullable: true }
+        statusMovimentacao:
+          type: string
+          description: Status traduzido (ex. "Processado com Sucesso", "Rejeitado").
+        numeroCarteirinha: { type: string, nullable: true }
+        criticas:
+          type: array
+          items: { $ref: '#/components/schemas/Critica' }
+
+    # ---- Resultado de escrita ----
+    MovimentacaoResultado:
+      type: object
+      description: |
+        Retorno padronizado de uma operação de escrita (`ResponseBaseSuccess`).
+        Consolida o resultado, validações de negócio e dados de auditoria.
+      properties:
+        status:
+          type: integer
+          description: Código HTTP resultante do processamento na operadora.
+          example: 200
+        protocolo:
+          type: string
+          nullable: true
+          description: Protocolo de rastreio gerado pela operadora.
+        statusMovimentacao:
+          type: string
+          nullable: true
+          example: "Processado com Sucesso"
+        beneficiario:
+          type: object
+          nullable: true
+          description: Resumo do beneficiário afetado.
+          properties:
+            nome: { type: string, nullable: true }
+            cpf: { type: string, nullable: true }
+            numeroCarteirinha: { type: string, nullable: true }
+        validacoes:
+          type: array
+          description: Validações/avisos retornados pela operadora.
+          items:
+            type: object
+            properties:
+              nomeBeneficiario: { type: string, nullable: true }
+              matriculaFuncionario: { type: string, nullable: true }
+              sequencial: { type: integer }
+              codigo: { type: string }
+              mensagem: { type: string }
+        criticas:
+          type: array
+          description: Erros críticos de regra de negócio.
+          items: { $ref: '#/components/schemas/Critica' }
+        requestURI:
+          type: string
+          nullable: true
+          description: URI exata da operadora chamada (auditoria).
+        requestJson:
+          type: object
+          nullable: true
+          description: Payload exato enviado à operadora (auditoria/troubleshooting).
+        responseContent:
+          type: object
+          nullable: true
+          description: Retorno cru (raw) devolvido pela API da operadora.
+
+    Critica:
+      type: object
+      description: Crítica/erro de validação devolvido pela operadora.
+      properties:
+        codigo: { type: string, nullable: true }
+        campo: { type: string, nullable: true }
+        mensagem: { type: string, nullable: true }
+
+    # ---- Coleções paginadas ----
+    Paginacao:
+      type: object
+      properties:
+        pagina: { type: integer, example: 1 }
+        quantidadePorPagina: { type: integer, example: 50 }
+        total: { type: integer, example: 2 }
+        totalPaginas: { type: integer, example: 1 }
+    ListaBeneficiarios:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Beneficiario' }
+        paginacao: { $ref: '#/components/schemas/Paginacao' }
+    ListaMovimentacoes:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Movimentacao' }
+        paginacao: { $ref: '#/components/schemas/Paginacao' }
+
+    # ---- Faturas ----
+    BaixaDeFatura:
+      type: object
+      properties:
+        cnpjCliente: { type: string, nullable: true }
+        contrato:
+          type: object
+          properties:
+            codigo: { type: string, nullable: true }
+            acesso:
+              type: object
+              properties:
+                usuario: { type: string, nullable: true }
+                senha: { type: string, nullable: true }
+    InterpretacaoDeFatura:
+      type: object
+      properties:
+        cnpjCliente: { type: string, nullable: true }
+        contrato: { type: string, nullable: true }
+        subcontrato: { type: string, nullable: true }
+        mes: { type: string, nullable: true }
+        ano: { type: string, nullable: true }
+        arquivo:
+          type: string
+          nullable: true
+          description: PDF/arquivo da fatura em base64.
+        valorFatura: { type: number, format: double }
+        valorCoparticipacao: { type: number, format: double, nullable: true }
+        link: { type: string, nullable: true }
+
+    # ---- Webhook ----
+    WebhookOperadora:
+      type: object
+      description: Payload assíncrono enviado pela operadora após processar movimentação.
+      properties:
+        codMovBenef: { type: integer }
+        codFamiliarBenef: { type: string, nullable: true }
+        matricula: { type: string, nullable: true }
+        nmeCompleto: { type: string, nullable: true }
+        codigoRdp: { type: string, nullable: true }
+        empresa: { type: string, nullable: true }
+        seguro: { type: string, nullable: true }
+        movimentacao: { type: string, nullable: true }
+        status: { type: string, nullable: true }
+        criticas:
+          type: array
+          items: { $ref: '#/components/schemas/Critica' }
+
+    # ---- Erro ----
+    Erro:
+      type: object
+      description: Estrutura padronizada de erro.
+      properties:
+        status:
+          type: integer
+          description: Código HTTP do erro.
+          example: 400
+        codigo:
+          type: string
+          nullable: true
+          description: Código interno do erro.
+        mensagem:
+          type: string
+          description: Descrição legível do erro.
+        criticas:
+          type: array
+          items: { $ref: '#/components/schemas/Critica' }

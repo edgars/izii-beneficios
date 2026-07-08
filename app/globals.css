@@ -1,0 +1,99 @@
+@import url("https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 229 12% 26%;
+    --card: 0 0% 100%;
+    --card-foreground: 229 12% 26%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 229 12% 26%;
+    --primary: 85 54% 51%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 85 20% 95%;
+    --secondary-foreground: 229 12% 26%;
+    --muted: 85 20% 96%;
+    --muted-foreground: 229 10% 45%;
+    --accent: 85 54% 94%;
+    --accent-foreground: 229 12% 26%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 229 15% 91%;
+    --input: 229 15% 91%;
+    --ring: 85 54% 51%;
+    --radius: 0.75rem;
+    --glow: 85 60% 58%;
+    --surface: 85 20% 98%;
+  }
+
+  .dark {
+    --background: 229 20% 7%;
+    --foreground: 0 0% 98%;
+    --card: 229 18% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 229 20% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 85 60% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 229 15% 14%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 229 12% 16%;
+    --muted-foreground: 229 10% 62%;
+    --accent: 85 30% 16%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 229 15% 18%;
+    --input: 229 15% 18%;
+    --ring: 85 60% 55%;
+    --glow: 85 60% 55%;
+    --surface: 229 18% 10%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    font-feature-settings: "ss01" on, "cv01" on;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-br from-izii-charcoal via-izii-charcoal to-izii-green bg-clip-text text-transparent;
+  }
+
+  .text-gradient-accent {
+    @apply bg-gradient-to-r from-izii-dark via-izii-green to-izii-lime bg-clip-text text-transparent;
+  }
+
+  .border-glow {
+    box-shadow:
+      0 0 0 1px hsl(var(--border)),
+      0 12px 32px -16px hsl(85 40% 30% / 0.18);
+  }
+
+  .grid-fade-mask {
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 20%, transparent 70%);
+  }
+
+  .prose-portal {
+    @apply prose max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-izii-charcoal prose-p:text-slate-600 prose-strong:text-izii-charcoal prose-a:text-izii-green prose-a:no-underline hover:prose-a:underline prose-code:rounded prose-code:bg-slate-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-izii-green prose-pre:border prose-pre:border-zinc-800 prose-pre:bg-[#0a0a0c];
+  }
+
+  .mermaid-diagram svg {
+    height: auto;
+  }
+}

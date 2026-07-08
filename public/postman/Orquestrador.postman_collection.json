@@ -1,0 +1,381 @@
+{
+  "info": {
+    "_postman_id": "izii-mds-orquestrador-v2",
+    "name": "IZII MDS — Orquestrador de Benefícios",
+    "description": "Coleção gerada a partir do Manual de Orientação Técnica — API Orquestrador v01 (07/04/2026).\n\nFluxo recomendado:\n1. Execute **Auth → Gerar Token** — o token é salvo automaticamente em `{{authorization_token}}`.\n2. Execute os endpoints de **Realizar Integração** ou **Consultar Movimentações** com os dados pré-preenchidos.\n\n**Variáveis da coleção:**\n- `baseURL` — URL base da API (ex: `https://api.izii.com.br/`)\n- `clientId` — consumer key do cliente\n- `clientSecret` — consumer secret do cliente\n- `tenantId` — identificador do inquilino\n- `authorization_token` — preenchido automaticamente após autenticação\n- `cnpjSulAmerica` — CNPJ da SulAmérica (`01685053000156`)\n- `cnpjBradesco` — CNPJ do Bradesco (`33055146000193`)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authorization_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": { "type": "text/javascript", "exec": [""] }
+    },
+    {
+      "listen": "test",
+      "script": { "type": "text/javascript", "exec": [""] }
+    }
+  ],
+  "variable": [
+    { "key": "baseURL",              "value": "https://localhost:44304/",  "type": "string" },
+    { "key": "clientId",             "value": "lazam-mds-portal",          "type": "string" },
+    { "key": "clientSecret",         "value": "mds-client",                "type": "string" },
+    { "key": "tenantId",             "value": "mds-secret-dev",            "type": "string" },
+    { "key": "authorization_token",  "value": "",                          "type": "string" },
+    { "key": "cnpjSulAmerica",       "value": "01685053000156",            "type": "string" },
+    { "key": "cnpjBradesco",         "value": "33055146000193",            "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "🔑 Autenticação",
+      "description": "Gera o token JWT de acesso. Execute este request primeiro — o script de teste salva o token automaticamente em `{{authorization_token}}`.",
+      "item": [
+        {
+          "name": "Gerar Token JWT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('authorization_token', json.token);",
+                  "    console.log('✅ Token salvo. Expira em: ' + json.dataExpiracao);",
+                  "} else {",
+                  "    console.warn('⚠️ Token não encontrado na resposta:', JSON.stringify(json));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "Accept",       "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientId\": \"{{clientId}}\",\n  \"clientSecret\": \"{{clientSecret}}\",\n  \"tenantId\": \"{{tenantId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}api/orquestrador/gerar-jwt-para-acesso",
+              "host": ["{{baseURL}}api"],
+              "path": ["orquestrador", "gerar-jwt-para-acesso"]
+            },
+            "description": "Endpoint de autenticação — único que **não** exige Bearer Token (`[AllowAnonymous]`).\n\nRetorna `token`, `dataCriacao` e `dataExpiracao` (validade de 2 horas)."
+          },
+          "response": [
+            {
+              "name": "200 OK — Token gerado",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clientId\": \"lazam-mds-portal\",\n  \"clientSecret\": \"mds-client\",\n  \"tenantId\": \"mds-secret-dev\"\n}"
+                },
+                "url": { "raw": "{{baseURL}}api/orquestrador/gerar-jwt-para-acesso" }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJsYXphbS1tZHMtcG9ydGFsIiwidGVuYW50SWQiOiJtZHMtc2VjcmV0LWRldiIsImlhdCI6MTc0NDA0MDAwMCwiZXhwIjoxNzQ0MDQ3MjAwfQ.mockSignatureXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\",\n  \"dataCriacao\": \"2026-04-07T10:00:00\",\n  \"dataExpiracao\": \"2026-04-07T12:00:00\"\n}"
+            },
+            {
+              "name": "401 Unauthorized — Credenciais inválidas",
+              "status": "Unauthorized",
+              "code": 401,
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"clientId\": \"cliente-invalido\",\n  \"clientSecret\": \"senha-errada\",\n  \"tenantId\": \"tenant-inexistente\"\n}" },
+                "url": { "raw": "{{baseURL}}api/orquestrador/gerar-jwt-para-acesso" }
+              },
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": 401,\n  \"mensagem\": \"ClientId ou ClientSecret inválidos.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔄 Realizar Integração",
+      "description": "Endpoint `/api/orquestrador/realizar-integracao` — núcleo operacional. Recebe o `RequestBase` padronizado e roteia para a operadora correta via `cnpjProvedor`.\n\nMovimentos suportados: **I** (Inclusão), **A** (Alteração), **E** (Exclusão), **T** (Troca de Plano), **R** (Reativação).",
+      "item": [
+        {
+          "name": "Inclusão (I) — Titular + Dependente",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json",          "type": "text" },
+              { "key": "Accept",        "value": "application/json",          "type": "text" },
+              { "key": "Authorization", "value": "Bearer {{authorization_token}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cnpjProvedor\": \"{{cnpjBradesco}}\",\n  \"movimento\": \"I\",\n  \"login\": \"\",\n  \"senha\": \"\",\n  \"origem\": 0,\n  \"guidProdutoBeneficiario\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n  \"guidFilaDeIntegracao\": \"7c9e6679-7425-40de-944b-e07fc1f90ae7\",\n  \"inclusao\": [\n    {\n      \"operacao\": \"I\",\n      \"nome\": \"João dos Santos e Silva\",\n      \"nomeAbreviado\": \"João Silva\",\n      \"cpf\": \"35999999960\",\n      \"dataNascimento\": \"1998-05-21\",\n      \"grauParentesco\": \"0\",\n      \"estadoCivil\": \"S\",\n      \"sexo\": \"M\",\n      \"nomeMae\": \"Marina dos Santos e Silva\",\n      \"rg\": \"99999820-X\",\n      \"orgaoEmissor\": \"SSP/SP\",\n      \"dataExpedicaoRg\": \"2010-06-08\",\n      \"pisPasep\": \"999.99999.99-9\",\n      \"matriculaFuncionario\": \"12345678\",\n      \"matriculaIzii\": \"12345678\",\n      \"dataAdesao\": \"2026-04-19\",\n      \"dataAdmissao\": \"2026-01-15\",\n      \"dataEvento\": \"2026-05-10\",\n      \"horaEvento\": \"14:56:00\",\n      \"endereco\": {\n        \"cep\": \"01123000\",\n        \"logradouro\": \"Av. XV de Novembro\",\n        \"numero\": \"1124\",\n        \"complemento\": \"Ap. 1121\",\n        \"bairro\": \"Jardim Eulália\",\n        \"municipio\": \"Sao Paulo\",\n        \"codMunicipio\": \"3550308\",\n        \"codMunicipioNascimentoIbge\": \"3550308\",\n        \"uf\": \"SP\",\n        \"regiao\": \"\"\n      },\n      \"contato\": {\n        \"email\": \"joao.silva@contoso.com\",\n        \"email1\": \"joao.silva2@contoso.com\",\n        \"dddCelular\": \"11\",\n        \"celular\": \"999999999\",\n        \"dddTelefone1\": \"11\",\n        \"telefone1\": \"12345678\",\n        \"ramal\": \"1111\"\n      },\n      \"dadosBancarios\": {\n        \"banco\": \"001\",\n        \"agencia\": \"0001\",\n        \"digitoAgencia\": \"0\",\n        \"conta\": \"9999999\",\n        \"digitoConta\": \"9\",\n        \"tipoConta\": \"ContaPoupanca\"\n      },\n      \"produto\": {\n        \"contrato\": \"1234\",\n        \"carteirinha\": \"\",\n        \"codigo\": \"1234\",\n        \"dataAlteracaoPlano\": \"2026-04-22\",\n        \"dataInicioContrato\": \"2026-04-19\"\n      },\n      \"apolice\": {\n        \"cia\": \"570\",\n        \"numero\": \"123456789\",\n        \"subfatura\": \"123\"\n      },\n      \"altura\": \"175\",\n      \"peso\": \"78\",\n      \"cargo\": \"Analista de RH\",\n      \"cns\": \"123456789012345\",\n      \"tipoProduto\": \"SAUDE\",\n      \"usuario\": \"MT234345\"\n    },\n    {\n      \"operacao\": \"I\",\n      \"nome\": \"Maria da Silva\",\n      \"nomeAbreviado\": \"Maria Silva\",\n      \"cpf\": \"09876543211\",\n      \"dataNascimento\": \"2000-03-15\",\n      \"grauParentesco\": \"3\",\n      \"estadoCivil\": \"S\",\n      \"sexo\": \"F\",\n      \"nomeMae\": \"Marina dos Santos e Silva\",\n      \"rg\": \"88888810-Y\",\n      \"orgaoEmissor\": \"SSP/SP\",\n      \"dataExpedicaoRg\": \"2018-02-20\",\n      \"dataAdesao\": \"2026-04-19\",\n      \"endereco\": {\n        \"cep\": \"01123000\",\n        \"logradouro\": \"Av. XV de Novembro\",\n        \"numero\": \"1124\",\n        \"complemento\": \"Ap. 1121\",\n        \"bairro\": \"Jardim Eulália\",\n        \"municipio\": \"Sao Paulo\",\n        \"uf\": \"SP\"\n      },\n      \"contato\": {\n        \"email\": \"maria.silva@contoso.com\",\n        \"dddCelular\": \"11\",\n        \"celular\": \"988887777\"\n      },\n      \"produto\": {\n        \"contrato\": \"1234\",\n        \"codigo\": \"1234\"\n      },\n      \"apolice\": {\n        \"cia\": \"570\",\n        \"numero\": \"123456789\"\n      },\n      \"tipoProduto\": \"SAUDE\",\n      \"usuario\": \"MT234345\"\n    }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}api/orquestrador/realizar-integracao",
+              "host": ["{{baseURL}}api"],
+              "path": ["orquestrador", "realizar-integracao"]
+            },
+            "description": "**Movimento I — Inclusão**\n\nPreenche o array `inclusao` com os beneficiários a incluir. O primeiro item com `grauParentesco: \"0\"` é o titular; os demais são dependentes.\n\n`grauParentesco` comum: `0` = Titular, `3` = Filho(a), `4` = Cônjuge."
+          },
+          "response": [
+            {
+              "name": "200 OK — Inclusão processada (titular OK, dependente rejeitado)",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": 200,\n  \"movimentacoes\": [\n    {\n      \"nomeBeneficiario\": \"João dos Santos e Silva\",\n      \"cpf\": \"35999999960\",\n      \"carteirinha\": \"888899999000011111\",\n      \"tipoMovimento\": \"Inclusão\",\n      \"statusMovimentacao\": \"Processado com Sucesso\",\n      \"criticas\": []\n    },\n    {\n      \"nomeBeneficiario\": \"Maria da Silva\",\n      \"cpf\": \"09876543211\",\n      \"carteirinha\": null,\n      \"tipoMovimento\": \"Inclusão\",\n      \"statusMovimentacao\": \"Rejeitado\",\n      \"criticas\": [\n        \"Data de nascimento incompatível com o grau de parentesco informado.\"\n      ]\n    }\n  ],\n  \"validacoes\": [],\n  \"requestURI\": \"https://api.bradesco.com.br/saude/v1/inclusoes\",\n  \"requestJson\": { \"nomeBeneficiario\": \"João dos Santos e Silva\", \"doc_cpf\": \"35999999960\" },\n  \"responseContent\": \"{\\\"success\\\": true, \\\"id\\\": 9988}\"\n}",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseURL}}api/orquestrador/realizar-integracao" }
+              }
+            },
+            {
+              "name": "400 Bad Request — CNPJProvedor inválido",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": 400,\n  \"movimentacoes\": [],\n  \"validacoes\": [\n    \"cnpjProvedor não encontrado ou operadora não suportada.\"\n  ],\n  \"requestURI\": null,\n  \"requestJson\": null,\n  \"responseContent\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Alteração (A) — Dados Cadastrais",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json",               "type": "text" },
+              { "key": "Accept",        "value": "application/json",               "type": "text" },
+              { "key": "Authorization", "value": "Bearer {{authorization_token}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cnpjProvedor\": \"{{cnpjBradesco}}\",\n  \"movimento\": \"A\",\n  \"guidProdutoBeneficiario\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n  \"guidFilaDeIntegracao\": \"9d8e1234-1111-4321-abcd-ef0123456789\",\n  \"alteracao\": {\n    \"cpf\": \"35999999960\",\n    \"carteirinha\": \"888899999000011111\",\n    \"nome\": \"João dos Santos e Silva\",\n    \"nomeAbreviado\": \"João Silva\",\n    \"estadoCivil\": \"C\",\n    \"dataCasamento\": \"2025-08-16\",\n    \"contato\": {\n      \"email\": \"joao.novo@contoso.com\",\n      \"dddCelular\": \"11\",\n      \"celular\": \"987654321\"\n    },\n    \"endereco\": {\n      \"cep\": \"01310100\",\n      \"logradouro\": \"Av. Paulista\",\n      \"numero\": \"1578\",\n      \"complemento\": \"10º andar\",\n      \"bairro\": \"Bela Vista\",\n      \"municipio\": \"Sao Paulo\",\n      \"uf\": \"SP\"\n    },\n    \"apolice\": {\n      \"cia\": \"570\",\n      \"numero\": \"123456789\"\n    },\n    \"usuario\": \"MT234345\",\n    \"tipoProduto\": \"SAUDE\"\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}api/orquestrador/realizar-integracao",
+              "host": ["{{baseURL}}api"],
+              "path": ["orquestrador", "realizar-integracao"]
+            },
+            "description": "**Movimento A — Alteração**\n\nPreenche o objeto `alteracao` com os campos que serão atualizados. Somente os campos informados são alterados na operadora."
+          },
+          "response": [
+            {
+              "name": "200 OK — Alteração processada com sucesso",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": 200,\n  \"movimentacoes\": [\n    {\n      \"nomeBeneficiario\": \"João dos Santos e Silva\",\n      \"cpf\": \"35999999960\",\n      \"carteirinha\": \"888899999000011111\",\n      \"tipoMovimento\": \"Alteração\",\n      \"statusMovimentacao\": \"Processado com Sucesso\",\n      \"criticas\": []\n    }\n  ],\n  \"validacoes\": [],\n  \"requestURI\": \"https://api.bradesco.com.br/saude/v1/alteracoes\",\n  \"requestJson\": { \"cpf\": \"35999999960\", \"email\": \"joao.novo@contoso.com\" },\n  \"responseContent\": \"{\\\"success\\\": true}\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Exclusão (E) — Desligamento",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json",               "type": "text" },
+              { "key": "Accept",        "value": "application/json",               "type": "text" },
+              { "key": "Authorization", "value": "Bearer {{authorization_token}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cnpjProvedor\": \"{{cnpjBradesco}}\",\n  \"movimento\": \"E\",\n  \"guidProdutoBeneficiario\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n  \"guidFilaDeIntegracao\": \"5b7c9abc-2222-4abc-bbbb-cc0987654321\",\n  \"exclusao\": {\n    \"cpf\": \"35999999960\",\n    \"carteirinha\": \"888899999000011111\",\n    \"dataExclusao\": \"2026-06-30\",\n    \"motivoExclusao\": \"Desligamento\",\n    \"apolice\": {\n      \"cia\": \"570\",\n      \"numero\": \"123456789\",\n      \"subfatura\": \"123\"\n    },\n    \"usuario\": \"MT234345\",\n    \"tipoProduto\": \"SAUDE\"\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}api/orquestrador/realizar-integracao",
+              "host": ["{{baseURL}}api"],
+              "path": ["orquestrador", "realizar-integracao"]
+            },
+            "description": "**Movimento E — Exclusão**\n\nPreenche o objeto `exclusao` com CPF, carteirinha e data de exclusão. Motivos comuns: `Desligamento`, `Óbito`, `Cancelamento Voluntário`."
+          },
+          "response": [
+            {
+              "name": "200 OK — Exclusão processada com sucesso",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": 200,\n  \"movimentacoes\": [\n    {\n      \"nomeBeneficiario\": \"João dos Santos e Silva\",\n      \"cpf\": \"35999999960\",\n      \"carteirinha\": \"888899999000011111\",\n      \"tipoMovimento\": \"Exclusão\",\n      \"statusMovimentacao\": \"Processado com Sucesso\",\n      \"criticas\": []\n    }\n  ],\n  \"validacoes\": [],\n  \"requestURI\": \"https://api.bradesco.com.br/saude/v1/exclusoes\",\n  \"requestJson\": { \"cpf\": \"35999999960\", \"dataExclusao\": \"2026-06-30\" },\n  \"responseContent\": \"{\\\"success\\\": true}\"\n}"
+            },
+            {
+              "name": "422 Unprocessable — Beneficiário não encontrado",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": 422,\n  \"movimentacoes\": [],\n  \"validacoes\": [\n    \"Beneficiário com CPF 35999999960 não encontrado na carteira da operadora.\"\n  ],\n  \"requestURI\": \"https://api.bradesco.com.br/saude/v1/exclusoes\",\n  \"requestJson\": null,\n  \"responseContent\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Troca de Plano (T)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json",               "type": "text" },
+              { "key": "Accept",        "value": "application/json",               "type": "text" },
+              { "key": "Authorization", "value": "Bearer {{authorization_token}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cnpjProvedor\": \"{{cnpjBradesco}}\",\n  \"movimento\": \"T\",\n  \"guidProdutoBeneficiario\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n  \"guidFilaDeIntegracao\": \"aa112233-3333-4444-cccc-dd0011223344\",\n  \"trocaPlano\": {\n    \"cpf\": \"35999999960\",\n    \"carteirinha\": \"888899999000011111\",\n    \"produto\": {\n      \"contrato\": \"5678\",\n      \"codigo\": \"5678\",\n      \"dataAlteracaoPlano\": \"2026-07-01\",\n      \"motivoAlteracao\": \"Promoção de cargo\"\n    },\n    \"apolice\": {\n      \"cia\": \"570\",\n      \"numero\": \"123456789\"\n    },\n    \"usuario\": \"MT234345\",\n    \"tipoProduto\": \"SAUDE\"\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}api/orquestrador/realizar-integracao",
+              "host": ["{{baseURL}}api"],
+              "path": ["orquestrador", "realizar-integracao"]
+            },
+            "description": "**Movimento T — Troca de Plano**\n\nPreenche o objeto `trocaPlano` com o novo código de produto/contrato e a data de vigência da mudança."
+          },
+          "response": [
+            {
+              "name": "200 OK — Troca de plano processada",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": 200,\n  \"movimentacoes\": [\n    {\n      \"nomeBeneficiario\": \"João dos Santos e Silva\",\n      \"cpf\": \"35999999960\",\n      \"carteirinha\": \"888899999000011111\",\n      \"tipoMovimento\": \"Troca de Plano\",\n      \"statusMovimentacao\": \"Processado com Sucesso\",\n      \"criticas\": []\n    }\n  ],\n  \"validacoes\": [],\n  \"requestURI\": \"https://api.bradesco.com.br/saude/v1/alteracoes-plano\",\n  \"requestJson\": { \"carteirinha\": \"888899999000011111\", \"codigoNovoPlano\": \"5678\" },\n  \"responseContent\": \"{\\\"success\\\": true, \\\"protocolo\\\": \\\"PROT-2026-88772\\\"}\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reativação (R)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json",               "type": "text" },
+              { "key": "Accept",        "value": "application/json",               "type": "text" },
+              { "key": "Authorization", "value": "Bearer {{authorization_token}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cnpjProvedor\": \"{{cnpjBradesco}}\",\n  \"movimento\": \"R\",\n  \"guidProdutoBeneficiario\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n  \"guidFilaDeIntegracao\": \"ee556677-5555-6666-dddd-ee9988776655\",\n  \"reativacao\": {\n    \"cpf\": \"35999999960\",\n    \"carteirinha\": \"888899999000011111\",\n    \"dataReativacao\": \"2026-07-01\",\n    \"motivoReativacao\": \"Recontratação\",\n    \"produto\": {\n      \"contrato\": \"1234\",\n      \"codigo\": \"1234\"\n    },\n    \"apolice\": {\n      \"cia\": \"570\",\n      \"numero\": \"123456789\"\n    },\n    \"usuario\": \"MT234345\",\n    \"tipoProduto\": \"SAUDE\"\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}api/orquestrador/realizar-integracao",
+              "host": ["{{baseURL}}api"],
+              "path": ["orquestrador", "realizar-integracao"]
+            },
+            "description": "**Movimento R — Reativação**\n\nReativa um beneficiário previamente excluído. Preenche o objeto `reativacao` com CPF, carteirinha e data de reativação."
+          },
+          "response": [
+            {
+              "name": "200 OK — Reativação processada",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": 200,\n  \"movimentacoes\": [\n    {\n      \"nomeBeneficiario\": \"João dos Santos e Silva\",\n      \"cpf\": \"35999999960\",\n      \"carteirinha\": \"888899999000011111\",\n      \"tipoMovimento\": \"Reativação\",\n      \"statusMovimentacao\": \"Processado com Sucesso\",\n      \"criticas\": []\n    }\n  ],\n  \"validacoes\": [],\n  \"requestURI\": \"https://api.bradesco.com.br/saude/v1/reativacoes\",\n  \"requestJson\": { \"cpf\": \"35999999960\", \"dataReativacao\": \"2026-07-01\" },\n  \"responseContent\": \"{\\\"success\\\": true}\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔍 Consultar Movimentações",
+      "description": "Endpoint `/api/orquestrador/buscar-movimentacoes` — consulta o status e histórico de movimentações cadastrais enviadas para as operadoras.\n\nUsa o mesmo `RequestBase` com `movimento: \"C\"` e o objeto `consulta` preenchido com filtros.",
+      "item": [
+        {
+          "name": "Buscar por CPF (SulAmérica)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json",               "type": "text" },
+              { "key": "Accept",        "value": "application/json",               "type": "text" },
+              { "key": "Authorization", "value": "Bearer {{authorization_token}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cnpjProvedor\": \"{{cnpjSulAmerica}}\",\n  \"movimento\": \"C\",\n  \"consulta\": {\n    \"cpf\": \"35999999960\",\n    \"apolice\": \"12345\",\n    \"empresa\": \"999999\",\n    \"dataMovimentacaoApolice\": \"2026-04-01\",\n    \"pagina\": \"1\",\n    \"quantidadePorPagina\": \"50\"\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}api/orquestrador/buscar-movimentacoes",
+              "host": ["{{baseURL}}api"],
+              "path": ["orquestrador", "buscar-movimentacoes"]
+            },
+            "description": "Consulta movimentações de um beneficiário específico por CPF na SulAmérica.\n\nFiltros disponíveis no objeto `consulta`:\n- `cpf` / `cpfDependente`\n- `apolice`\n- `empresa` / `cnpj`\n- `dataMovimentacaoApolice`\n- `pagina` + `quantidadePorPagina` (paginação)"
+          },
+          "response": [
+            {
+              "name": "200 OK — Movimentações encontradas",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": 200,\n  \"movimentacoes\": [\n    {\n      \"nome\": \"João dos Santos e Silva\",\n      \"cpf\": \"35999999960\",\n      \"tipoMovimento\": \"Inclusão\",\n      \"dataMovimentacao\": \"2026-04-01T10:30:00\",\n      \"statusMovimentacao\": \"Processado com Sucesso\",\n      \"numeroCarteirinha\": \"888899999000011111\",\n      \"criticas\": []\n    },\n    {\n      \"nome\": \"Maria da Silva\",\n      \"cpf\": \"09876543211\",\n      \"tipoMovimento\": \"Inclusão\",\n      \"dataMovimentacao\": \"2026-04-01T10:30:00\",\n      \"statusMovimentacao\": \"Rejeitado\",\n      \"numeroCarteirinha\": null,\n      \"criticas\": [\n        \"Data de nascimento incompatível com o grau de parentesco informado.\"\n      ]\n    }\n  ],\n  \"requestURI\": \"https://apisulamérica.com.br/beneficiarios/movimentacoes-vidas\",\n  \"requestJson\": { \"cpf\": \"35999999960\", \"apolice\": \"12345\" }\n}"
+            },
+            {
+              "name": "200 OK — Nenhuma movimentação encontrada",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": 200,\n  \"movimentacoes\": [],\n  \"requestURI\": \"https://apisulamerica.com.br/beneficiarios/movimentacoes-vidas\",\n  \"requestJson\": { \"cpf\": \"35999999960\", \"apolice\": \"12345\" }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Buscar por Apólice (Bradesco)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json",               "type": "text" },
+              { "key": "Accept",        "value": "application/json",               "type": "text" },
+              { "key": "Authorization", "value": "Bearer {{authorization_token}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cnpjProvedor\": \"{{cnpjBradesco}}\",\n  \"movimento\": \"C\",\n  \"consulta\": {\n    \"apolice\": \"123456789\",\n    \"empresa\": \"999999\",\n    \"dataMovimentacaoApolice\": \"2026-04-01\",\n    \"pagina\": \"1\",\n    \"quantidadePorPagina\": \"50\"\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseURL}}api/orquestrador/buscar-movimentacoes",
+              "host": ["{{baseURL}}api"],
+              "path": ["orquestrador", "buscar-movimentacoes"]
+            },
+            "description": "Consulta todas as movimentações de uma apólice Bradesco em uma data específica, com paginação."
+          },
+          "response": [
+            {
+              "name": "200 OK — Lista de movimentações da apólice",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": 200,\n  \"movimentacoes\": [\n    {\n      \"nome\": \"João dos Santos e Silva\",\n      \"cpf\": \"35999999960\",\n      \"tipoMovimento\": \"Inclusão\",\n      \"dataMovimentacao\": \"2026-04-01T10:30:00\",\n      \"statusMovimentacao\": \"Processado com Sucesso\",\n      \"numeroCarteirinha\": \"888899999000011111\",\n      \"criticas\": []\n    },\n    {\n      \"nome\": \"Ana Costa\",\n      \"cpf\": \"11122233344\",\n      \"tipoMovimento\": \"Exclusão\",\n      \"dataMovimentacao\": \"2026-04-01T14:15:00\",\n      \"statusMovimentacao\": \"Em Análise\",\n      \"numeroCarteirinha\": \"777766665500022222\",\n      \"criticas\": []\n    }\n  ],\n  \"requestURI\": \"https://api.bradesco.com.br/saude/v1/movimentacoes\",\n  \"requestJson\": { \"apolice\": \"123456789\", \"dataMovimentacao\": \"2026-04-01\" }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

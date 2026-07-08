@@ -1,0 +1,467 @@
+// Inclusão
+{
+  "cnpjProvedor": "99999999999999", // CNPJ da Operadora
+  "movimento": "I", // I=Inclusão, A=Alteração, E=Exclusão, T=Troca de Plano, R=Reativação, C=Consulta
+  "login": "MT9999999", // Usuário de Autenticação na Operadora
+  "senha": "********", // Senha de Autenticação na Operadora
+  "origem": 0, // Deixar 0
+  "guidProdutoBeneficiario": "a1b2c3d4-e5f6-7890-abcd-1234567890ab", // Uso do Cliente, sem uso no orquestrador
+  "guidFilaDeIntegracao": "f0e9d8c7-b6a5-4321-fedc-ba9876543210", // Uso do cliente, sem uso no orquestrador
+  "inclusao": [
+    {
+      "operacao": "I", // Mesmo movimento da requisição Base
+      "nome": "Joao da Silva",
+      "nomeAbreviado": "JOAO SILVA",
+      "cpf": "99999999999",
+      "dataNascimento": "1985-03-12T00:00:00",
+      "grauParentesco": "0", // 0=Titular, 1=Conjuge/companheiro(a), 2=Filho(a), outros valores sao repassados direto
+      "estadoCivil": "C", // S=SOLTEIRO, C=CASADO, V=VIUVO, O=OUTROS
+      "sexo": "M", // M=Masculino, F=Feminino
+      "nomeMae": "Maria da Silva",
+      "rg": "123456789",
+      "orgaoEmissor": "SSP",
+      "dataExpedicaoRg": "2005-06-10T00:00:00",
+      "pisPasep": "12345678901",
+      "matriculaFuncionario": "EMP000123",
+      "matriculaIzii": "IZII-000123",
+      "dataAdesao": "2026-05-15T00:00:00",
+      "dataAdmissao": "2026-05-01T00:00:00",
+      "dataEvento": "2026-05-15T10:00:00",
+      "horaEvento": "10:00",
+      "endereco": {
+        "cep": "01310100",
+        "logradouro": "Av. Paulista",
+        "numero": "1000",
+        "complemento": "Apto 101",
+        "bairro": "Bela Vista",
+        "municipio": "Sao Paulo",
+        "codMunicipio": "3550308",
+        "codMunicipioNascimentoIbge": "3550308",
+        "codMunicipioNascimentoCorreio": "01000",
+        "uf": "SP",
+        "regiao": "SE"
+      },
+      "contato": {
+        "email": "joao.silva@acme.com.br",
+        "email1": "joao.pessoal@gmail.com",
+        "dddCelular": "11",
+        "dddCelular1": "11",
+        "dddTelefone1": "11",
+        "telefone1": "33334444",
+        "celular": "999998888",
+        "celular1": "988887777",
+        "ramalTelefone1": "1234",
+        "ramal": "5678"
+      },
+      "dadosBancarios": {
+        "banco": "237",
+        "agencia": "1234",
+        "digitoAgencia": "5",
+        "conta": "00012345",
+        "digitoConta": "6",
+        "tipoConta": "CC",
+        "numero": "00012345-6",
+        "tipoOperacao": "001"
+      },
+      "produto": {
+        "contrato": "789",
+        "carteirinha": "",
+        "subContrato": "001",
+        "codigo": "PLANO-ENF-01",
+        "codigoRDP": "RDP-001",
+        "dataAlteracaoPlano": null,
+        "dataInicioContrato": "2026-05-15T00:00:00",
+        "motivoAlteracao": null
+      },
+      "apolice": {
+        "cia": "BRADESCO",
+        "numero": "123456",
+        "subfatura": "001"
+      },
+      "altura": "175",
+      "cargo": "Analista de Sistemas",
+      "codigoAngariador": "ANG-001",
+      "cns": "123456789012345",
+      "declaracaoNascidoVivo": null,
+      "peso": "78",
+      "possuiCoberturaParcialTemporaria": "N",
+      "possuiContaCredito": "N",
+      "regiao": "SE", // N=Nordeste, NE=Nordeste, S=Sul, SE=Southeast, CO=Centro-Oeste, N=Norte
+      "codigoSucursal": "001",
+      "cpdCorretor": "CPD-001",
+      "certificado": "CERT-123",
+      "dataCasamento": "2010-08-20T00:00:00",
+      "codTipoRegistro": "01",
+      "codFamilia": "FAM-001",
+      "codDependencia": "00",
+      "indLayoutOrigem": "01",
+      "lotacao": "Matriz SP",
+      "codSetor": "TI-001",
+      "dataLotacao": "2026-05-01T00:00:00",
+      "dataInicioContribuicao": "2026-05-01T00:00:00",
+      "situacaoEmpresa": "ATIVA",
+      "codigoFuncao": "FN-001",
+      "codPaisEmissor": "BRA",
+      "sequenciaFamilia": "01",
+      "sequenciaBeneficiario": "00",
+      "usuario": "integrador.izii",
+      "tipoProduto": "SAUDE" // SAUDE ou ODONTO
+    }
+  ]
+}
+
+// Alteração
+{
+  "cnpjProvedor": "92693118000160", // CNPJ da Operadora
+  "movimento": "A", // Alteração
+  "login": "usuario.izii", // Usuário de Autenticação na API da Operadora
+  "senha": "********", // Senha de Autenticação na API da Operadora
+  "origem": 0, // Deixar 0
+  "alteracao": {
+    "identificador": "EMP000123",
+    "dataEvento": "2026-05-15T10:00:00",
+    "operacao": "A", // Mesmo movimento da requisição Base
+    "codDependencia": "00",
+    "nome": "Joao da Silva",
+    "nomeAbreviado": "JOAO SILVA",
+    "cpf": "12345678901",
+    "numSus": null,
+    "cns": "123456789012345",
+    "rg": "123456789",
+    "orgaoEmissor": "SSP",
+    "sequencial": "01",
+    "codPaisEmissor": "BRA",
+    "dataNascimento": "1985-03-12T00:00:00",
+    "dataAdesao": "2026-05-15T00:00:00",
+    "dataCasamento": "2010-08-20T00:00:00",
+    "grauParentesco": "0", // 0=Titular, 1=Conjuge/companheiro(a), 2=Filho(a), outros valores sao repassados direto
+    "estadoCivil": "C", // S=SOLTEIRO, C=CASADO, V=VIUVO, O=OUTROS
+    "sexo": "M", // M=Masculino, F=Feminino
+    "nomeMae": "Maria da Silva",
+    "pisPasep": "12345678901",
+    "matriculaOperadora": "OPR-000123",
+    "lotacao": "Matriz SP",
+    "codSetor": "TI-001",
+    "situacaoEmpresa": "ATIVA", // ATIVA=Ativa, INATIVA=Inativa
+    "codigoFuncao": "FN-001",
+    "bloqueioInadimplencia": false,
+    "dataBloqueioInadimplencia": null,
+    "dataAdmissao": "2026-05-01T00:00:00",
+    "dataLotacao": "2026-05-01T00:00:00",
+    "dataInicioContribuicao": "2026-05-01T00:00:00",
+    "endereco": {
+      "cep": "04567000",
+      "logradouro": "Rua das Flores",
+      "numero": "200",
+      "complemento": null,
+      "bairro": "Vila Olimpia",
+      "municipio": "Sao Paulo",
+      "codMunicipio": "3550308",
+      "uf": "SP",
+      "regiao": "SE" // N=Nordeste, NE=Nordeste, S=Sul, SE=Southeast, CO=Centro-Oeste, N=Norte
+    },
+    "contato": {
+      "email": "joao.silva.novo@acme.com.br",
+      "dddCelular": "11",
+      "celular": "988887777"
+    },
+    "dadosBancarios": {
+      "banco": "237",
+      "agencia": "1234",
+      "conta": "00012345",
+      "digitoConta": "6",
+      "tipoConta": "CC"
+    },
+    "produto": {
+      "contrato": "789",
+      "subContrato": "001",
+      "codigo": "PLANO-ENF-01"
+    },
+    "altura": "175",
+    "codigoSucursal": "001",
+    "cpdCorretor": "CPD-001",
+    "codigoAngariador": "ANG-001",
+    "apolice": {
+      "cia": "BRADESCO",
+      "numero": "123456",
+      "subfatura": "001"
+    },
+    "cargo": "Coordenador de Sistemas",
+    "certificado": "CERT-123",
+    "dataExpedicaoRg": "2005-06-10T00:00:00",
+    "declaracaoNascidoVivo": null,
+    "peso": "78",
+    "possuiCoberturaParcialTemporaria": "N",
+    "possuiContaCredito": "N",
+    "regiao": "SE",
+    "registroProposta": "RP-001",
+    "codigoSegurado": "SEG-000123",
+    "sequenciaOperadora": "01",
+    "usuario": "integrador.izii"
+  }
+}
+
+// Exclusão
+{
+  "cnpjProvedor": "92693118000160",
+  "movimento": "E",
+  "login": "usuario.izii",
+  "senha": "********",
+  "origem": 0,
+  "exclusao": {
+    "motivoExclusao": "06",
+    "dataExclusao": "2026-05-31T00:00:00",
+    "flagContributario": false,
+    "matriculaOperadora": "OPR-000123",
+    "matriculaEmpresa": "EMP000123",
+    "tipoProduto": "SAUDE",
+    "produto": {
+      "contrato": "789",
+      "subContrato": "001",
+      "codigo": "PLANO-ENF-01"
+    },
+    "apolice": "123456",
+    "certificado": "CERT-123",
+    "codigoSegurado": "SEG-000123",
+    "codigoSucursal": "001",
+    "cpdCorretor": "CPD-001",
+    "operacao": "E",
+    "codDependencia": "00",
+    "nome": "Joao da Silva",
+    "nomeAbreviado": "JOAO SILVA",
+    "cpf": "12345678901",
+    "numSus": null,
+    "rg": "123456789",
+    "orgaoEmissor": "SSP",
+    "codPaisEmissor": "BRA",
+    "dataNascimento": "1985-03-12T00:00:00",
+    "dataAdesao": "2026-05-15T00:00:00",
+    "dataCasamento": "2010-08-20T00:00:00",
+    "grauParentesco": "0", // 0=Titular, 1=Conjuge/companheiro(a), 2=Filho(a), outros valores sao repassados direto
+    "estadoCivil": "C", // S=SOLTEIRO, C=CASADO, V=VIUVO, O=OUTROS
+    "sexo": "M", // M=Masculino, F=Feminino
+    "nomeMae": "Maria da Silva",
+    "pisPasep": "12345678901",
+    "lotacao": "Matriz SP",
+    "codSetor": "TI-001",
+    "situacaoEmpresa": "ATIVA",
+    "codigoFuncao": "FN-001",
+    "bloqueioInadimplencia": false,
+    "dataBloqueioInadimplencia": null,
+    "dataAdmissao": "2026-05-01T00:00:00",
+    "dataLotacao": "2026-05-01T00:00:00",
+    "dataInicioContribuicao": "2026-05-01T00:00:00",
+    "endereco": {
+      "cep": "01310100",
+      "logradouro": "Av. Paulista",
+      "numero": "1000",
+      "complemento": "Apto 101",
+      "bairro": "Bela Vista",
+      "municipio": "Sao Paulo",
+      "uf": "SP"
+    },
+    "contato": {
+      "email": "joao.silva@acme.com.br",
+      "dddCelular": "11",
+      "celular": "999998888"
+    },
+    "dadosBancarios": null,
+    "altura": "175",
+    "codigoAngariador": "ANG-001",
+    "cargo": "Analista de Sistemas",
+    "dataExpedicaoRg": "2005-06-10T00:00:00",
+    "declaracaoNascidoVivo": null,
+    "peso": "78",
+    "possuiCoberturaParcialTemporaria": "N", // S=Sim, N=Não
+    "possuiContaCredito": "N", // S=Sim, N=Não
+    "regiao": "SE", // N=Nordeste, NE=Nordeste, S=Sul, SE=Southeast, CO=Centro-Oeste, N=Norte
+    "registroProposta": "RP-001",
+    "codTipoRegistro": "01",
+    "codFamilia": "FAM-001",
+    "indLayoutOrigem": "01",
+    "sequenciaOperadora": "01",
+    "usuario": "integrador.izii",
+    "codigoRDP": "RDP-001"
+  }
+}
+
+// Troca de plano
+{
+  "cnpjProvedor": "92693118000160",
+  "movimento": "T", // Troca de Plano
+  "login": "usuario.izii",
+  "senha": "********",
+  "origem": 0, // Manter 0
+  "trocaPlano": [
+    {
+      "operacao": "T", // Mesmo movimento da requisição Base
+      "indLayoutOrigem": "01",
+      "codFamilia": "FAM-001",
+      "codDependencia": "00",
+      "nome": "Joao da Silva",
+      "sexo": "M", // M=Masculino, F=Feminino
+      "estadoCivil": "C", // S=SOLTEIRO, C=CASADO, V=VIUVO, O=OUTROS
+      "dataNascimento": "1985-03-12T00:00:00",
+      "dataAdesao": "2026-05-15T00:00:00",
+      "dataCasamento": "2010-08-20T00:00:00",
+      "nomeMae": "Maria da Silva",
+      "cpf": "12345678901",
+      "pisPasep": "12345678901",
+      "cns": "123456789012345",
+      "rg": "123456789",
+      "orgaoEmissor": "SSP",
+      "codPaisEmissor": "BRA",
+      "lotacao": "Matriz SP",
+      "dataLotacao": "2026-05-01T00:00:00",
+      "dataAdmissao": "2026-05-01T00:00:00",
+      "codSetor": "TI-001",
+      "situacaoEmpresa": "ATIVA", // ATIVA=Ativa, INATIVA=Inativa
+      "matriculaFuncionario": "EMP000123",
+      "dataInicioContribuicao": "2026-05-01T00:00:00",
+      "codigoFuncao": "FN-001",
+      "endereco": {
+        "cep": "01310100",
+        "logradouro": "Av. Paulista",
+        "numero": "1000",
+        "bairro": "Bela Vista",
+        "municipio": "Sao Paulo",
+        "uf": "SP"
+      },
+      "contato": {
+        "email": "joao.silva@acme.com.br",
+        "dddCelular": "11",
+        "celular": "999998888"
+      },
+      "dadosBancarios": null,
+      "produto": {
+        "contrato": "789",
+        "subContrato": "001",
+        "codigo": "PLANO-APT-02",
+        "codigoRDP": "RDP-002",
+        "dataAlteracaoPlano": "2026-06-01T00:00:00",
+        "dataInicioContrato": "2026-05-15T00:00:00",
+        "motivoAlteracao": "UPGRADE_VOLUNTARIO"
+      }
+    }
+  ]
+}
+
+// Reativação
+{
+  "cnpjProvedor": "92693118000160", // CNPJ da Operadora
+  "movimento": "R", // Reativação
+  "login": "usuario.izii", // Usuário de Autenticação na API da Operadora
+  "senha": "********", // Senha de Autenticação na API da Operadora
+  "origem": 0, // Deixar 0
+  "reativacao": [
+    {
+      "codTipoRegistro": "01",
+      "operacao": "R", // Mesmo movimento da requisição Base
+      "codDependencia": "00",
+      "matriculaFuncionario": "EMP000123",
+      "cpf": "12345678901",
+      "dataReativacao": "2026-05-20T00:00:00",
+      "produto": {
+        "contrato": "789",
+        "subContrato": "001",
+        "codigo": "PLANO-ENF-01",
+        "dataInicioContrato": "2026-05-15T00:00:00"
+      }
+    }
+  ]
+}
+
+// Consulta situação do beneficiário
+"7_consulta_RequestBase": {
+{
+  "cnpjProvedor": "92693118000160", // CNPJ da Operadora
+  "movimento": "C", // Consulta
+  "login": "usuario.izii", // Usuário de Autenticação na API da Operadora
+  "senha": "********", // Senha de Autenticação na API da Operadora
+  "origem": 0, // Deixar 0
+  "consulta": {
+    "apolice": "123456",
+    "pagina": "1",
+    "quantidadePorPagina": "50",
+    "usuario": "integrador.izii",
+    "cia": "BRADESCO",
+    "cnpj": "12345678000199",
+    "dependente": null,
+    "matriculaEspecial": null,
+    "certificado": null,
+    "numeroCartao": null,
+    "nome": null,
+    "cpf": "12345678901",
+    "cpfDependente": null,
+    "subfatura": "001",
+    "codigoBeneficiarioDependente": null,
+    "cpdCorretor": "CPD-001",
+    "dataMovimentacaoApolice": "2026-05-15",
+    "sucursalCorretor": "001",
+    "dataNascimento": null,
+    "cep": null,
+    "empresa": "ACME Industria S/A",
+    "codigoMovimentacao": null
+  }
+}
+
+
+
+// Tipos de dados e tabelas de domínio extraídas do código (para facilitar entendimento e evitar que o cliente precise acessar o código fonte):
+"tabelasDominio_extraidasDoCodigo": {
+"_fonte": "Orchestrator.Business/Conversions/{Bradesco,Sulamerica,Unimed} - https://github.com/izii-git/api-orchestrator",
+"movimento": {
+  "I": "Inclusao (preenche o array 'inclusao')",
+  "A": "Alteracao (preenche o objeto 'alteracao')",
+  "E": "Exclusao (preenche o objeto 'exclusao')",
+  "T": "Troca de Plano (preenche o array 'trocaPlano')",
+  "R": "Reativacao (preenche o array 'reativacao')",
+  "C": "Consulta (preenche o objeto 'consulta')"
+},
+"operacao_nivelItem": {
+  "I": "Inclusao",
+  "A": "Alteracao",
+  "E": "Exclusao"
+},
+"origem_OriginsTransactions": {
+  "0": "Origem padrao (Protheus/sistema cliente)",
+  "1": "Outra origem (RPA/integracao interna) - confirmar com Michel/Rapha"
+},
+"grauParentesco_padraoProtheus": {
+  "0": "Titular - filtro usado pelo Bradesco para distinguir titular de dependente",
+  "1": "Conjuge / Companheiro(a) - com sexo=F vira esposa, sexo=M vira marido na Unimed",
+  "2": "Filho(a) - com sexo=F vira filha, sexo=M vira filho",
+  "outros": "Repassados direto. SulAmerica converte com int.Parse, entao precisa ser numerico"
+},
+"codDependencia_Unimed_calculado": {
+  "00": "Titular (grauParentesco=0)",
+  "01": "Esposa (grauParentesco=1 + sexo=F)",
+  "09": "Marido (grauParentesco=1 + sexo=M)",
+  "10..29": "Filho (grauParentesco=2 + sexo=M) - incrementa se houver multiplos",
+  "30..49": "Filha (grauParentesco=2 + sexo=F) - incrementa se houver multiplas"
+},
+"sexo": {
+  "M": "Masculino (Bradesco converte para '1')",
+  "F": "Feminino (Bradesco converte para '2')"
+},
+"estadoCivil": {
+  "S ou 1": "Solteiro - Bradesco saida '1'",
+  "C ou 2": "Casado - Bradesco saida '2'",
+  "V ou 3": "Viuvo - Bradesco saida '3'",
+  "outros (D, U, etc.)": "Bradesco saida '4'"
+},
+"tipoConta": {
+  "ContaPoupanca": "Bradesco saida '2'",
+  "outros": "Bradesco saida '0' (conta corrente)"
+},
+"motivoExclusao_ANS_padrao": {
+  "01": "Obito",
+  "02": "Exoneracao",
+  "03": "Aposentadoria",
+  "04": "Cancelamento por inadimplencia",
+  "05": "Solicitacao do beneficiario",
+  "06": "Demissao",
+  "07": "Perda de vinculo",
+  "99": "Outros"
+}
+}

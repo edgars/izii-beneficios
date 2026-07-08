@@ -1,0 +1,659 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/orquestrador_mds_requestbase.schema.json",
+  "title": "Orquestrador MDS - RequestBase",
+  "type": "object",
+  "oneOf": [
+    { "$ref": "#/definitions/RequestInclusao" },
+    { "$ref": "#/definitions/RequestAlteracao" },
+    { "$ref": "#/definitions/RequestExclusao" },
+    { "$ref": "#/definitions/RequestTrocaPlano" },
+    { "$ref": "#/definitions/RequestReativacao" },
+    { "$ref": "#/definitions/RequestConsulta" }
+  ],
+  "definitions": {
+    "Cnpj14": {
+      "type": "string",
+      "description": "CNPJ com 14 dígitos (somente números).",
+      "pattern": "^\\d{14}$"
+    },
+    "Cpf11": {
+      "type": "string",
+      "description": "CPF com 11 dígitos (somente números).",
+      "pattern": "^\\d{11}$"
+    },
+    "Cep8": {
+      "type": "string",
+      "description": "CEP com 8 dígitos (somente números).",
+      "pattern": "^\\d{8}$"
+    },
+    "Uuid": {
+      "type": "string",
+      "description": "UUID (v1-v5).",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "DateLocal": {
+      "type": "string",
+      "description": "Data no formato YYYY-MM-DD.",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "DateTimeLocal": {
+      "type": "string",
+      "description": "Data/hora no formato YYYY-MM-DDTHH:mm:ss (sem timezone, conforme exemplos).",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+    },
+    "TimeHHmm": {
+      "type": "string",
+      "description": "Hora no formato HH:mm.",
+      "pattern": "^\\d{2}:\\d{2}$"
+    },
+    "Uf": {
+      "type": "string",
+      "description": "UF (sigla do estado brasileiro).",
+      "enum": ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
+    },
+    "Regiao": {
+      "type": "string",
+      "description": "Região do Brasil (conforme domínio do orquestrador).",
+      "enum": ["N", "NE", "S", "SE", "CO"]
+    },
+    "Sexo": {
+      "type": "string",
+      "enum": ["M", "F"]
+    },
+    "EstadoCivil": {
+      "type": "string",
+      "description": "S=Solteiro, C=Casado, V=Viúvo, O=Outros.",
+      "enum": ["S", "C", "V", "O", "1", "2", "3", "4"]
+    },
+    "TipoProduto": {
+      "type": "string",
+      "enum": ["SAUDE", "ODONTO"]
+    },
+    "SimNao": {
+      "type": "string",
+      "enum": ["S", "N"]
+    },
+    "EnderecoInclusao": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cep": { "$ref": "#/definitions/Cep8" },
+        "logradouro": { "type": "string" },
+        "numero": { "type": "string" },
+        "complemento": { "type": "string" },
+        "bairro": { "type": "string" },
+        "municipio": { "type": "string" },
+        "codMunicipio": { "type": "string" },
+        "codMunicipioNascimentoIbge": { "type": "string" },
+        "codMunicipioNascimentoCorreio": { "type": "string" },
+        "uf": { "$ref": "#/definitions/Uf" },
+        "regiao": { "$ref": "#/definitions/Regiao" }
+      },
+      "required": ["cep", "logradouro", "numero", "bairro", "municipio", "uf"]
+    },
+    "EnderecoBasico": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cep": { "$ref": "#/definitions/Cep8" },
+        "logradouro": { "type": "string" },
+        "numero": { "type": "string" },
+        "complemento": { "type": ["string", "null"] },
+        "bairro": { "type": "string" },
+        "municipio": { "type": "string" },
+        "codMunicipio": { "type": "string" },
+        "uf": { "$ref": "#/definitions/Uf" },
+        "regiao": { "$ref": "#/definitions/Regiao" }
+      },
+      "required": ["cep", "logradouro", "numero", "bairro", "municipio", "uf"]
+    },
+    "ContatoInclusao": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "email": { "type": "string" },
+        "email1": { "type": "string" },
+        "dddCelular": { "type": "string" },
+        "dddCelular1": { "type": "string" },
+        "dddTelefone1": { "type": "string" },
+        "telefone1": { "type": "string" },
+        "celular": { "type": "string" },
+        "celular1": { "type": "string" },
+        "ramalTelefone1": { "type": "string" },
+        "ramal": { "type": "string" }
+      },
+      "required": ["email"]
+    },
+    "ContatoBasico": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "email": { "type": ["string", "null"] },
+        "dddCelular": { "type": ["string", "null"] },
+        "celular": { "type": ["string", "null"] }
+      }
+    },
+    "DadosBancariosCompleto": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "banco": { "type": "string" },
+        "agencia": { "type": "string" },
+        "digitoAgencia": { "type": "string" },
+        "conta": { "type": "string" },
+        "digitoConta": { "type": "string" },
+        "tipoConta": { "type": "string" },
+        "numero": { "type": "string" },
+        "tipoOperacao": { "type": "string" }
+      },
+      "required": ["banco", "agencia", "conta", "digitoConta", "tipoConta"]
+    },
+    "DadosBancariosBasico": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "banco": { "type": "string" },
+        "agencia": { "type": "string" },
+        "conta": { "type": "string" },
+        "digitoConta": { "type": "string" },
+        "tipoConta": { "type": "string" }
+      },
+      "required": ["banco", "agencia", "conta", "digitoConta", "tipoConta"]
+    },
+    "ProdutoInclusao": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contrato": { "type": "string" },
+        "carteirinha": { "type": "string" },
+        "subContrato": { "type": "string" },
+        "codigo": { "type": "string" },
+        "codigoRDP": { "type": "string" },
+        "dataAlteracaoPlano": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$" },
+        "dataInicioContrato": { "$ref": "#/definitions/DateTimeLocal" },
+        "motivoAlteracao": { "type": ["string", "null"] }
+      },
+      "required": ["contrato", "subContrato", "codigo", "dataInicioContrato"]
+    },
+    "ProdutoBasico": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contrato": { "type": "string" },
+        "subContrato": { "type": "string" },
+        "codigo": { "type": "string" },
+        "codigoRDP": { "type": "string" },
+        "dataAlteracaoPlano": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$" },
+        "dataInicioContrato": { "$ref": "#/definitions/DateTimeLocal" },
+        "motivoAlteracao": { "type": ["string", "null"] }
+      },
+      "required": ["contrato", "subContrato", "codigo"]
+    },
+    "ApoliceObj": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cia": { "type": "string" },
+        "numero": { "type": "string" },
+        "subfatura": { "type": "string" }
+      },
+      "required": ["cia", "numero"]
+    },
+    "BeneficiarioInclusao": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "operacao": { "type": "string", "enum": ["I"] },
+        "nome": { "type": "string" },
+        "nomeAbreviado": { "type": "string" },
+        "cpf": { "$ref": "#/definitions/Cpf11" },
+        "dataNascimento": { "$ref": "#/definitions/DateTimeLocal" },
+        "grauParentesco": { "type": "string" },
+        "estadoCivil": { "$ref": "#/definitions/EstadoCivil" },
+        "sexo": { "$ref": "#/definitions/Sexo" },
+        "nomeMae": { "type": "string" },
+        "rg": { "type": "string" },
+        "orgaoEmissor": { "type": "string" },
+        "dataExpedicaoRg": { "$ref": "#/definitions/DateTimeLocal" },
+        "pisPasep": { "type": "string" },
+        "matriculaFuncionario": { "type": "string" },
+        "matriculaIzii": { "type": "string" },
+        "dataAdesao": { "$ref": "#/definitions/DateTimeLocal" },
+        "dataAdmissao": { "$ref": "#/definitions/DateTimeLocal" },
+        "dataEvento": { "$ref": "#/definitions/DateTimeLocal" },
+        "horaEvento": { "$ref": "#/definitions/TimeHHmm" },
+        "endereco": { "$ref": "#/definitions/EnderecoInclusao" },
+        "contato": { "$ref": "#/definitions/ContatoInclusao" },
+        "dadosBancarios": { "$ref": "#/definitions/DadosBancariosCompleto" },
+        "produto": { "$ref": "#/definitions/ProdutoInclusao" },
+        "apolice": { "$ref": "#/definitions/ApoliceObj" },
+        "altura": { "type": "string" },
+        "cargo": { "type": "string" },
+        "codigoAngariador": { "type": "string" },
+        "cns": { "type": "string", "pattern": "^\\d{15}$" },
+        "declaracaoNascidoVivo": { "type": ["string", "null"] },
+        "peso": { "type": "string" },
+        "possuiCoberturaParcialTemporaria": { "$ref": "#/definitions/SimNao" },
+        "possuiContaCredito": { "$ref": "#/definitions/SimNao" },
+        "regiao": { "$ref": "#/definitions/Regiao" },
+        "codigoSucursal": { "type": "string" },
+        "cpdCorretor": { "type": "string" },
+        "certificado": { "type": "string" },
+        "dataCasamento": { "$ref": "#/definitions/DateTimeLocal" },
+        "codTipoRegistro": { "type": "string" },
+        "codFamilia": { "type": "string" },
+        "codDependencia": { "type": "string" },
+        "indLayoutOrigem": { "type": "string" },
+        "lotacao": { "type": "string" },
+        "codSetor": { "type": "string" },
+        "dataLotacao": { "$ref": "#/definitions/DateTimeLocal" },
+        "dataInicioContribuicao": { "$ref": "#/definitions/DateTimeLocal" },
+        "situacaoEmpresa": { "type": "string" },
+        "codigoFuncao": { "type": "string" },
+        "codPaisEmissor": { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "sequenciaFamilia": { "type": "string" },
+        "sequenciaBeneficiario": { "type": "string" },
+        "usuario": { "type": "string" },
+        "tipoProduto": { "$ref": "#/definitions/TipoProduto" }
+      },
+      "required": ["operacao", "nome", "cpf", "dataNascimento", "grauParentesco", "sexo", "endereco", "produto", "tipoProduto"]
+    },
+    "Alteracao": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "identificador": { "type": "string" },
+        "dataEvento": { "$ref": "#/definitions/DateTimeLocal" },
+        "operacao": { "type": "string", "enum": ["A"] },
+        "codDependencia": { "type": "string" },
+        "nome": { "type": "string" },
+        "nomeAbreviado": { "type": "string" },
+        "cpf": { "$ref": "#/definitions/Cpf11" },
+        "numSus": { "type": ["string", "null"] },
+        "cns": { "type": ["string", "null"], "pattern": "^\\d{15}$" },
+        "rg": { "type": "string" },
+        "orgaoEmissor": { "type": "string" },
+        "sequencial": { "type": "string" },
+        "codPaisEmissor": { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "dataNascimento": { "$ref": "#/definitions/DateTimeLocal" },
+        "dataAdesao": { "$ref": "#/definitions/DateTimeLocal" },
+        "dataCasamento": { "$ref": "#/definitions/DateTimeLocal" },
+        "grauParentesco": { "type": "string" },
+        "estadoCivil": { "$ref": "#/definitions/EstadoCivil" },
+        "sexo": { "$ref": "#/definitions/Sexo" },
+        "nomeMae": { "type": "string" },
+        "pisPasep": { "type": "string" },
+        "matriculaOperadora": { "type": "string" },
+        "lotacao": { "type": "string" },
+        "codSetor": { "type": "string" },
+        "situacaoEmpresa": { "type": "string" },
+        "codigoFuncao": { "type": "string" },
+        "bloqueioInadimplencia": { "type": "boolean" },
+        "dataBloqueioInadimplencia": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$" },
+        "dataAdmissao": { "$ref": "#/definitions/DateTimeLocal" },
+        "dataLotacao": { "$ref": "#/definitions/DateTimeLocal" },
+        "dataInicioContribuicao": { "$ref": "#/definitions/DateTimeLocal" },
+        "endereco": { "$ref": "#/definitions/EnderecoBasico" },
+        "contato": { "$ref": "#/definitions/ContatoBasico" },
+        "dadosBancarios": { "$ref": "#/definitions/DadosBancariosBasico" },
+        "produto": { "$ref": "#/definitions/ProdutoBasico" },
+        "altura": { "type": "string" },
+        "codigoSucursal": { "type": "string" },
+        "cpdCorretor": { "type": "string" },
+        "codigoAngariador": { "type": "string" },
+        "apolice": { "$ref": "#/definitions/ApoliceObj" },
+        "cargo": { "type": "string" },
+        "certificado": { "type": "string" },
+        "dataExpedicaoRg": { "$ref": "#/definitions/DateTimeLocal" },
+        "declaracaoNascidoVivo": { "type": ["string", "null"] },
+        "peso": { "type": "string" },
+        "possuiCoberturaParcialTemporaria": { "$ref": "#/definitions/SimNao" },
+        "possuiContaCredito": { "$ref": "#/definitions/SimNao" },
+        "regiao": { "$ref": "#/definitions/Regiao" },
+        "registroProposta": { "type": "string" },
+        "codigoSegurado": { "type": "string" },
+        "sequenciaOperadora": { "type": "string" },
+        "usuario": { "type": "string" }
+      },
+      "required": ["identificador", "operacao", "cpf"]
+    },
+    "Exclusao": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "motivoExclusao": { "type": "string" },
+        "dataExclusao": { "$ref": "#/definitions/DateTimeLocal" },
+        "flagContributario": { "type": "boolean" },
+        "matriculaOperadora": { "type": "string" },
+        "matriculaEmpresa": { "type": "string" },
+        "tipoProduto": { "$ref": "#/definitions/TipoProduto" },
+        "produto": { "$ref": "#/definitions/ProdutoBasico" },
+        "apolice": { "type": "string" },
+        "certificado": { "type": "string" },
+        "codigoSegurado": { "type": "string" },
+        "codigoSucursal": { "type": "string" },
+        "cpdCorretor": { "type": "string" },
+        "operacao": { "type": "string", "enum": ["E"] },
+        "codDependencia": { "type": "string" },
+        "nome": { "type": "string" },
+        "nomeAbreviado": { "type": "string" },
+        "cpf": { "$ref": "#/definitions/Cpf11" },
+        "numSus": { "type": ["string", "null"] },
+        "rg": { "type": "string" },
+        "orgaoEmissor": { "type": "string" },
+        "codPaisEmissor": { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "dataNascimento": { "$ref": "#/definitions/DateTimeLocal" },
+        "dataAdesao": { "$ref": "#/definitions/DateTimeLocal" },
+        "dataCasamento": { "$ref": "#/definitions/DateTimeLocal" },
+        "grauParentesco": { "type": "string" },
+        "estadoCivil": { "$ref": "#/definitions/EstadoCivil" },
+        "sexo": { "$ref": "#/definitions/Sexo" },
+        "nomeMae": { "type": "string" },
+        "pisPasep": { "type": "string" },
+        "lotacao": { "type": "string" },
+        "codSetor": { "type": "string" },
+        "situacaoEmpresa": { "type": "string" },
+        "codigoFuncao": { "type": "string" },
+        "bloqueioInadimplencia": { "type": "boolean" },
+        "dataBloqueioInadimplencia": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$" },
+        "dataAdmissao": { "$ref": "#/definitions/DateTimeLocal" },
+        "dataLotacao": { "$ref": "#/definitions/DateTimeLocal" },
+        "dataInicioContribuicao": { "$ref": "#/definitions/DateTimeLocal" },
+        "endereco": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cep": { "$ref": "#/definitions/Cep8" },
+            "logradouro": { "type": "string" },
+            "numero": { "type": "string" },
+            "complemento": { "type": ["string", "null"] },
+            "bairro": { "type": "string" },
+            "municipio": { "type": "string" },
+            "uf": { "$ref": "#/definitions/Uf" }
+          },
+          "required": ["cep", "logradouro", "numero", "bairro", "municipio", "uf"]
+        },
+        "contato": { "$ref": "#/definitions/ContatoBasico" },
+        "dadosBancarios": { "type": ["object", "null"] },
+        "altura": { "type": "string" },
+        "codigoAngariador": { "type": "string" },
+        "cargo": { "type": "string" },
+        "dataExpedicaoRg": { "$ref": "#/definitions/DateTimeLocal" },
+        "declaracaoNascidoVivo": { "type": ["string", "null"] },
+        "peso": { "type": "string" },
+        "possuiCoberturaParcialTemporaria": { "$ref": "#/definitions/SimNao" },
+        "possuiContaCredito": { "$ref": "#/definitions/SimNao" },
+        "regiao": { "$ref": "#/definitions/Regiao" },
+        "registroProposta": { "type": "string" },
+        "codTipoRegistro": { "type": "string" },
+        "codFamilia": { "type": "string" },
+        "indLayoutOrigem": { "type": "string" },
+        "sequenciaOperadora": { "type": "string" },
+        "usuario": { "type": "string" },
+        "codigoRDP": { "type": "string" }
+      },
+      "required": ["motivoExclusao", "dataExclusao", "operacao", "cpf", "produto"]
+    },
+    "TrocaPlanoItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "operacao": { "type": "string", "enum": ["T"] },
+        "indLayoutOrigem": { "type": "string" },
+        "codFamilia": { "type": "string" },
+        "codDependencia": { "type": "string" },
+        "nome": { "type": "string" },
+        "sexo": { "$ref": "#/definitions/Sexo" },
+        "estadoCivil": { "$ref": "#/definitions/EstadoCivil" },
+        "dataNascimento": { "$ref": "#/definitions/DateTimeLocal" },
+        "dataAdesao": { "$ref": "#/definitions/DateTimeLocal" },
+        "dataCasamento": { "$ref": "#/definitions/DateTimeLocal" },
+        "nomeMae": { "type": "string" },
+        "cpf": { "$ref": "#/definitions/Cpf11" },
+        "pisPasep": { "type": "string" },
+        "cns": { "type": ["string", "null"], "pattern": "^\\d{15}$" },
+        "rg": { "type": "string" },
+        "orgaoEmissor": { "type": "string" },
+        "codPaisEmissor": { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "lotacao": { "type": "string" },
+        "dataLotacao": { "$ref": "#/definitions/DateTimeLocal" },
+        "dataAdmissao": { "$ref": "#/definitions/DateTimeLocal" },
+        "codSetor": { "type": "string" },
+        "situacaoEmpresa": { "type": "string" },
+        "matriculaFuncionario": { "type": "string" },
+        "dataInicioContribuicao": { "$ref": "#/definitions/DateTimeLocal" },
+        "codigoFuncao": { "type": "string" },
+        "endereco": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cep": { "$ref": "#/definitions/Cep8" },
+            "logradouro": { "type": "string" },
+            "numero": { "type": "string" },
+            "bairro": { "type": "string" },
+            "municipio": { "type": "string" },
+            "uf": { "$ref": "#/definitions/Uf" }
+          },
+          "required": ["cep", "logradouro", "numero", "bairro", "municipio", "uf"]
+        },
+        "contato": { "$ref": "#/definitions/ContatoBasico" },
+        "dadosBancarios": { "type": ["object", "null"] },
+        "produto": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "contrato": { "type": "string" },
+            "subContrato": { "type": "string" },
+            "codigo": { "type": "string" },
+            "codigoRDP": { "type": "string" },
+            "dataAlteracaoPlano": { "$ref": "#/definitions/DateTimeLocal" },
+            "dataInicioContrato": { "$ref": "#/definitions/DateTimeLocal" },
+            "motivoAlteracao": { "type": "string" }
+          },
+          "required": ["contrato", "subContrato", "codigo", "dataAlteracaoPlano", "dataInicioContrato"]
+        }
+      },
+      "required": ["operacao", "cpf", "produto"]
+    },
+    "ReativacaoItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "codTipoRegistro": { "type": "string" },
+        "operacao": { "type": "string", "enum": ["R"] },
+        "codDependencia": { "type": "string" },
+        "matriculaFuncionario": { "type": "string" },
+        "cpf": { "$ref": "#/definitions/Cpf11" },
+        "dataReativacao": { "$ref": "#/definitions/DateTimeLocal" },
+        "produto": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "contrato": { "type": "string" },
+            "subContrato": { "type": "string" },
+            "codigo": { "type": "string" },
+            "dataInicioContrato": { "$ref": "#/definitions/DateTimeLocal" }
+          },
+          "required": ["contrato", "subContrato", "codigo", "dataInicioContrato"]
+        }
+      },
+      "required": ["operacao", "cpf", "dataReativacao", "produto"]
+    },
+    "Consulta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "apolice": { "type": "string" },
+        "pagina": { "type": "string" },
+        "quantidadePorPagina": { "type": "string" },
+        "usuario": { "type": "string" },
+        "cia": { "type": "string" },
+        "cnpj": { "$ref": "#/definitions/Cnpj14" },
+        "dependente": { "type": ["string", "null"] },
+        "matriculaEspecial": { "type": ["string", "null"] },
+        "certificado": { "type": ["string", "null"] },
+        "numeroCartao": { "type": ["string", "null"] },
+        "nome": { "type": ["string", "null"] },
+        "cpf": { "$ref": "#/definitions/Cpf11" },
+        "cpfDependente": { "type": ["string", "null"], "pattern": "^\\d{11}$" },
+        "subfatura": { "type": "string" },
+        "codigoBeneficiarioDependente": { "type": ["string", "null"] },
+        "cpdCorretor": { "type": "string" },
+        "dataMovimentacaoApolice": { "$ref": "#/definitions/DateLocal" },
+        "sucursalCorretor": { "type": "string" },
+        "dataNascimento": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "cep": { "type": ["string", "null"], "pattern": "^\\d{8}$" },
+        "empresa": { "type": ["string", "null"] },
+        "codigoMovimentacao": { "type": ["string", "null"] }
+      },
+      "required": ["apolice", "pagina", "quantidadePorPagina", "cpf"]
+    },
+    "RequestBaseCommon": {
+      "type": "object",
+      "properties": {
+        "cnpjProvedor": { "$ref": "#/definitions/Cnpj14" },
+        "movimento": { "type": "string", "enum": ["I", "A", "E", "T", "R", "C"] },
+        "login": { "type": "string" },
+        "senha": { "type": "string" },
+        "origem": { "type": "integer", "enum": [0, 1] },
+        "guidProdutoBeneficiario": { "$ref": "#/definitions/Uuid" },
+        "guidFilaDeIntegracao": { "$ref": "#/definitions/Uuid" }
+      },
+      "required": ["cnpjProvedor", "movimento", "login", "senha", "origem"]
+    },
+    "RequestInclusao": {
+      "allOf": [
+        { "$ref": "#/definitions/RequestBaseCommon" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cnpjProvedor": { "$ref": "#/definitions/Cnpj14" },
+            "movimento": { "const": "I" },
+            "login": { "type": "string" },
+            "senha": { "type": "string" },
+            "origem": { "type": "integer", "enum": [0, 1] },
+            "guidProdutoBeneficiario": { "$ref": "#/definitions/Uuid" },
+            "guidFilaDeIntegracao": { "$ref": "#/definitions/Uuid" },
+            "inclusao": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/definitions/BeneficiarioInclusao" }
+            }
+          },
+          "required": ["movimento", "inclusao"]
+        }
+      ]
+    },
+    "RequestAlteracao": {
+      "allOf": [
+        { "$ref": "#/definitions/RequestBaseCommon" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cnpjProvedor": { "$ref": "#/definitions/Cnpj14" },
+            "movimento": { "const": "A" },
+            "login": { "type": "string" },
+            "senha": { "type": "string" },
+            "origem": { "type": "integer", "enum": [0, 1] },
+            "guidProdutoBeneficiario": { "$ref": "#/definitions/Uuid" },
+            "guidFilaDeIntegracao": { "$ref": "#/definitions/Uuid" },
+            "alteracao": { "$ref": "#/definitions/Alteracao" }
+          },
+          "required": ["movimento", "alteracao"]
+        }
+      ]
+    },
+    "RequestExclusao": {
+      "allOf": [
+        { "$ref": "#/definitions/RequestBaseCommon" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cnpjProvedor": { "$ref": "#/definitions/Cnpj14" },
+            "movimento": { "const": "E" },
+            "login": { "type": "string" },
+            "senha": { "type": "string" },
+            "origem": { "type": "integer", "enum": [0, 1] },
+            "guidProdutoBeneficiario": { "$ref": "#/definitions/Uuid" },
+            "guidFilaDeIntegracao": { "$ref": "#/definitions/Uuid" },
+            "exclusao": { "$ref": "#/definitions/Exclusao" }
+          },
+          "required": ["movimento", "exclusao"]
+        }
+      ]
+    },
+    "RequestTrocaPlano": {
+      "allOf": [
+        { "$ref": "#/definitions/RequestBaseCommon" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cnpjProvedor": { "$ref": "#/definitions/Cnpj14" },
+            "movimento": { "const": "T" },
+            "login": { "type": "string" },
+            "senha": { "type": "string" },
+            "origem": { "type": "integer", "enum": [0, 1] },
+            "guidProdutoBeneficiario": { "$ref": "#/definitions/Uuid" },
+            "guidFilaDeIntegracao": { "$ref": "#/definitions/Uuid" },
+            "trocaPlano": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/definitions/TrocaPlanoItem" }
+            }
+          },
+          "required": ["movimento", "trocaPlano"]
+        }
+      ]
+    },
+    "RequestReativacao": {
+      "allOf": [
+        { "$ref": "#/definitions/RequestBaseCommon" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cnpjProvedor": { "$ref": "#/definitions/Cnpj14" },
+            "movimento": { "const": "R" },
+            "login": { "type": "string" },
+            "senha": { "type": "string" },
+            "origem": { "type": "integer", "enum": [0, 1] },
+            "guidProdutoBeneficiario": { "$ref": "#/definitions/Uuid" },
+            "guidFilaDeIntegracao": { "$ref": "#/definitions/Uuid" },
+            "reativacao": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/definitions/ReativacaoItem" }
+            }
+          },
+          "required": ["movimento", "reativacao"]
+        }
+      ]
+    },
+    "RequestConsulta": {
+      "allOf": [
+        { "$ref": "#/definitions/RequestBaseCommon" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cnpjProvedor": { "$ref": "#/definitions/Cnpj14" },
+            "movimento": { "const": "C" },
+            "login": { "type": "string" },
+            "senha": { "type": "string" },
+            "origem": { "type": "integer", "enum": [0, 1] },
+            "guidProdutoBeneficiario": { "$ref": "#/definitions/Uuid" },
+            "guidFilaDeIntegracao": { "$ref": "#/definitions/Uuid" },
+            "consulta": { "$ref": "#/definitions/Consulta" }
+          },
+          "required": ["movimento", "consulta"]
+        }
+      ]
+    }
+  }
+}
+

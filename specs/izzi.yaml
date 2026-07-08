@@ -1,0 +1,1538 @@
+openapi: 3.0.3
+info:
+  title: Orquestrador API Beneficiários (IZII)
+  description: |
+    API unificada para movimentação cadastral de beneficiários junto a operadoras de saúde (Bradesco, SulAmérica, Unimed, etc.).
+      
+    Esta API suporta operações de **Inclusão**, **Alteração**, **Exclusão**, **Troca de Plano**, **Reativação** e **Consulta** através de payloads dinâmicos controlados pelo campo `movimento`.
+  version: 1.0.0
+servers:
+  - url: https://api./v1
+    description: Sandbox / Homologação
+paths:
+  /beneficiarios/movimentacao:
+    post:
+      summary: Executar Movimentação de Beneficiário
+      description: Rota única que orquestra as ações cadastrais dependendo do tipo de movimento informado na base do payload.
+      operationId: executarMovimentacao
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovimentacaoBase'
+            examples:
+              Inclusao:
+                summary: Inclusão de Beneficiário (Titular)
+                value:
+                  cnpjProvedor: "99999999999999"
+                  movimento: "I"
+                  login: "MT9999999"
+                  senha: "********"
+                  origem: 0
+                  guidProdutoBeneficiario: "a1b2c3d4-e5f6-7890-abcd-1234567890ab"
+                  guidFilaDeIntegracao: "f0e9d8c7-b6a5-4321-fedc-ba9876543210"
+                  inclusao:
+                    - operacao: "I"
+                      nome: "Joao da Silva"
+                      nomeAbreviado: "JOAO SILVA"
+                      cpf: "99999999999"
+                      dataNascimento: "1985-03-12T00:00:00"
+                      grauParentesco: "0"
+                      estadoCivil: "C"
+                      sexo: "M"
+                      nomeMae: "Maria da Silva"
+                      rg: "123456789"
+                      orgaoEmissor: "SSP"
+                      dataExpedicaoRg: "2005-06-10T00:00:00"
+                      pisPasep: "12345678901"
+                      matriculaFuncionario: "EMP000123"
+                      matriculaIzii: "IZII-000123"
+                      dataAdesao: "2026-05-15T00:00:00"
+                      dataAdmissao: "2026-05-01T00:00:00"
+                      dataEvento: "2026-05-15T10:00:00"
+                      horaEvento: "10:00"
+                      endereco:
+                        cep: "01310100"
+                        logradouro: "Av. Paulista"
+                        numero: "1000"
+                        complemento: "Apto 101"
+                        bairro: "Bela Vista"
+                        municipio: "Sao Paulo"
+                        codMunicipio: "3550308"
+                        codMunicipioNascimentoIbge: "3550308"
+                        codMunicipioNascimentoCorreio: "01000"
+                        uf: "SP"
+                        regiao: "SE"
+                      contato:
+                        email: "joao.silva@acme.com.br"
+                        email1: "joao.pessoal@gmail.com"
+                        dddCelular: "11"
+                        dddCelular1: "11"
+                        dddTelefone1: "11"
+                        telefone1: "33334444"
+                        celular: "999998888"
+                        celular1: "988887777"
+                        ramalTelefone1: "1234"
+                        ramal: "5678"
+                      dadosBancarios:
+                        banco: "237"
+                        agencia: "1234"
+                        digitoAgencia: "5"
+                        conta: "00012345"
+                        digitoConta: "6"
+                        tipoConta: "CC"
+                        numero: "00012345-6"
+                        tipoOperacao: "001"
+                      produto:
+                        contrato: "789"
+                        carteirinha: ""
+                        subContrato: "001"
+                        codigo: "PLANO-ENF-01"
+                        codigoRDP: "RDP-001"
+                        dataAlteracaoPlano: null
+                        dataInicioContrato: "2026-05-15T00:00:00"
+                        motivoAlteracao: null
+                      apolice:
+                        cia: "BRADESCO"
+                        numero: "123456"
+                        subfatura: "001"
+                      altura: "175"
+                      cargo: "Analista de Sistemas"
+                      codigoAngariador: "ANG-001"
+                      cns: "123456789012345"
+                      declaracaoNascidoVivo: null
+                      peso: "78"
+                      possuiCoberturaParcialTemporaria: "N"
+                      possuiContaCredito: "N"
+                      regiao: "SE"
+                      codigoSucursal: "001"
+                      cpdCorretor: "CPD-001"
+                      certificado: "CERT-123"
+                      dataCasamento: "2010-08-20T00:00:00"
+                      codTipoRegistro: "01"
+                      codFamilia: "FAM-001"
+                      codDependencia: "00"
+                      indLayoutOrigem: "01"
+                      lotacao: "Matriz SP"
+                      codSetor: "TI-001"
+                      dataLotacao: "2026-05-01T00:00:00"
+                      dataInicioContribuicao: "2026-05-01T00:00:00"
+                      situacaoEmpresa: "ATIVA"
+                      codigoFuncao: "FN-001"
+                      codPaisEmissor: "BRA"
+                      sequenciaFamilia: "01"
+                      sequenciaBeneficiario: "00"
+                      usuario: "integrador.izii"
+                      tipoProduto: "SAUDE"
+              Alteracao:
+                summary: Alteração de Dados
+                value:
+                  cnpjProvedor: "92693118000160"
+                  movimento: "A"
+                  login: "usuario.izii"
+                  senha: "********"
+                  origem: 0
+                  alteracao:
+                    identificador: "EMP000123"
+                    dataEvento: "2026-05-15T10:00:00"
+                    operacao: "A"
+                    codDependencia: "00"
+                    nome: "Joao da Silva"
+                    nomeAbreviado: "JOAO SILVA"
+                    cpf: "12345678901"
+                    numSus: null
+                    cns: "123456789012345"
+                    rg: "123456789"
+                    orgaoEmissor: "SSP"
+                    sequencial: "01"
+                    codPaisEmissor: "BRA"
+                    dataNascimento: "1985-03-12T00:00:00"
+                    dataAdesao: "2026-05-15T00:00:00"
+                    dataCasamento: "2010-08-20T00:00:00"
+                    grauParentesco: "0"
+                    estadoCivil: "C"
+                    sexo: "M"
+                    nomeMae: "Maria da Silva"
+                    pisPasep: "12345678901"
+                    matriculaOperadora: "OPR-000123"
+                    lotacao: "Matriz SP"
+                    codSetor: "TI-001"
+                    situacaoEmpresa: "ATIVA"
+                    codigoFuncao: "FN-001"
+                    bloqueioInadimplencia: false
+                    dataBloqueioInadimplencia: null
+                    dataAdmissao: "2026-05-01T00:00:00"
+                    dataLotacao: "2026-05-01T00:00:00"
+                    dataInicioContribuicao: "2026-05-01T00:00:00"
+                    endereco:
+                      cep: "04567000"
+                      logradouro: "Rua das Flores"
+                      numero: "200"
+                      complemento: null
+                      bairro: "Vila Olimpia"
+                      municipio: "Sao Paulo"
+                      codMunicipio: "3550308"
+                      uf: "SP"
+                      regiao: "SE"
+                    contato:
+                      email: "joao.silva.novo@acme.com.br"
+                      dddCelular: "11"
+                      celular: "988887777"
+                    dadosBancarios:
+                      banco: "237"
+                      agencia: "1234"
+                      conta: "00012345"
+                      digitoConta: "6"
+                      tipoConta: "CC"
+                    produto:
+                      contrato: "789"
+                      subContrato: "001"
+                      codigo: "PLANO-ENF-01"
+                    altura: "175"
+                    codigoSucursal: "001"
+                    cpdCorretor: "CPD-001"
+                    codigoAngariador: "ANG-001"
+                    apolice:
+                      cia: "BRADESCO"
+                      numero: "123456"
+                      subfatura: "001"
+                    cargo: "Coordenador de Sistemas"
+                    certificado: "CERT-123"
+                    dataExpedicaoRg: "2005-06-10T00:00:00"
+                    declaracaoNascidoVivo: null
+                    peso: "78"
+                    possuiCobertarParcialTemporaria: "N"
+                    possuiContaCredito: "N"
+                    regiao: "SE"
+                    registroProposta: "RP-001"
+                    codigoSegurado: "SEG-000123"
+                    sequenciaOperadora: "01"
+                    usuario: "integrador.izii"
+              Exclusao:
+                summary: Exclusão / Cancelamento de Beneficiário
+                value:
+                  cnpjProvedor: "92693118000160"
+                  movimento: "E"
+                  login: "usuario.izii"
+                  senha: "********"
+                  origem: 0
+                  exclusao:
+                    motivoExclusao: "06"
+                    dataExclusao: "2026-05-31T00:00:00"
+                    flagContributario: false
+                    matriculaOperadora: "OPR-000123"
+                    matriculaEmpresa: "EMP000123"
+                    tipoProduto: "SAUDE"
+                    produto:
+                      contrato: "789"
+                      subContrato: "001"
+                      codigo: "PLANO-ENF-01"
+                    apolice: "123456"
+                    certificado: "CERT-123"
+                    codigoSegurado: "SEG-000123"
+                    codigoSucursal: "001"
+                    cpdCorretor: "CPD-001"
+                    operacao: "E"
+                    codDependencia: "00"
+                    nome: "Joao da Silva"
+                    nomeAbreviado: "JOAO SILVA"
+                    cpf: "12345678901"
+                    numSus: null
+                    rg: "123456789"
+                    orgaoEmissor: "SSP"
+                    codPaisEmissor: "BRA"
+                    dataNascimento: "1985-03-12T00:00:00"
+                    dataAdesao: "2026-05-15T00:00:00"
+                    dataCasamento: "2010-08-20T00:00:00"
+                    grauParentesco: "0"
+                    estadoCivil: "C"
+                    sexo: "M"
+                    nomeMae: "Maria da Silva"
+                    pisPasep: "12345678901"
+                    lotacao: "Matriz SP"
+                    codSetor: "TI-001"
+                    situacaoEmpresa: "ATIVA"
+                    codigoFuncao: "FN-001"
+                    bloqueioInadimplencia: false
+                    dataBloqueioInadimplencia: null
+                    dataAdmissao: "2026-05-01T00:00:00"
+                    dataLotacao: "2026-05-01T00:00:00"
+                    dataInicioContribuicao: "2026-05-01T00:00:00"
+                    endereco:
+                      cep: "01310100"
+                      logradouro: "Av. Paulista"
+                      numero: "1000"
+                      complemento: "Apto 101"
+                      bairro: "Bela Vista"
+                      municipio: "Sao Paulo"
+                      uf: "SP"
+                    contato:
+                      email: "joao.silva@acme.com.br"
+                      dddCelular: "11"
+                      celular: "999998888"
+                    dadosBancarios: null
+                    altura: "175"
+                    codigoAngariador: "ANG-001"
+                    cargo: "Analista de Sistemas"
+                    dataExpedicaoRg: "2005-06-10T00:00:00"
+                    declaracaoNascidoVivo: null
+                    peso: "78"
+                    possuiCoberturaParcialTemporaria: "N"
+                    possuiContaCredito: "N"
+                    regiao: "SE"
+                    registroProposta: "RP-001"
+                    codTipoRegistro: "01"
+                    codFamilia: "FAM-001"
+                    indLayoutOrigem: "01"
+                    sequenciaOperadora: "01"
+                    usuario: "integrador.izii"
+                    codigoRDP: "RDP-001"
+              TrocaDePlano:
+                summary: Troca de Plano / Upgrade
+                value:
+                  cnpjProvedor: "92693118000160"
+                  movimento: "T"
+                  login: "usuario.izii"
+                  senha: "********"
+                  origem: 0
+                  trocaPlano:
+                    - operacao: "T"
+                      indLayoutOrigem: "01"
+                      codFamilia: "FAM-001"
+                      codDependencia: "00"
+                      nome: "Joao da Silva"
+                      sexo: "M"
+                      estadoCivil: "C"
+                      dataNascimento: "1985-03-12T00:00:00"
+                      dataAdesao: "2026-05-15T00:00:00"
+                      dataCasamento: "2010-08-20T00:00:00"
+                      nomeMae: "Maria da Silva"
+                      cpf: "12345678901"
+                      pisPasep: "12345678901"
+                      cns: "123456789012345"
+                      rg: "123456789"
+                      orgaoEmissor: "SSP"
+                      codPaisEmissor: "BRA"
+                      lotacao: "Matriz SP"
+                      dataLotacao: "2026-05-01T00:00:00"
+                      dataAdmissao: "2026-05-01T00:00:00"
+                      codSetor: "TI-001"
+                      situacaoEmpresa: "ATIVA"
+                      matriculaFuncionario: "EMP000123"
+                      dataInicioContribuicao: "2026-05-01T00:00:00"
+                      codigoFuncao: "FN-001"
+                      endereco:
+                        cep: "01310100"
+                        logradouro: "Av. Paulista"
+                        numero: "1000"
+                        bairro: "Bela Vista"
+                        municipio: "Sao Paulo"
+                        uf: "SP"
+                      contato:
+                        email: "joao.silva@acme.com.br"
+                        dddCelular: "11"
+                        celular: "999998888"
+                      dadosBancarios: null
+                      produto:
+                        contrato: "789"
+                        subContrato: "001"
+                        codigo: "PLANO-APT-02"
+                        codigoRDP: "RDP-002"
+                        dataAlteracaoPlano: "2026-06-01T00:00:00"
+                        dataInicioContrato: "2026-05-15T00:00:00"
+                        motivoAlteracao: "UPGRADE_VOLUNTARIO"
+              Reativacao:
+                summary: Reativação de Beneficiário
+                value:
+                  cnpjProvedor: "92693118000160"
+                  movimento: "R"
+                  login: "usuario.izii"
+                  senha: "********"
+                  origem: 0
+                  reativacao:
+                    - codTipoRegistro: "01"
+                      operacao: "R"
+                      codDependencia: "00"
+                      matriculaFuncionario: "EMP000123"
+                      cpf: "12345678901"
+                      dataReativacao: "2026-05-20T00:00:00"
+                      produto:
+                        contrato: "789"
+                        subContrato: "001"
+                        codigo: "PLANO-ENF-01"
+                        dataInicioContrato: "2026-05-15T00:00:00"
+              Consulta:
+                summary: Consulta Situação do Beneficiário
+                value:
+                  cnpjProvedor: "92693118000160"
+                  movimento: "C"
+                  login: "usuario.izii"
+                  senha: "********"
+                  origem: 0
+                  consulta:
+                    apolice: "123456"
+                    pagina: "1"
+                    quantidadePorPagina: "50"
+                    usuario: "integrador.izii"
+                    cia: "BRADESCO"
+                    cnpj: "12345678000199"
+                    dependente: null
+                    matriculaEspecial: null
+                    certificado: null
+                    numeroCartao: null
+                    nome: null
+                    cpf: "12345678901"
+                    cpfDependente: null
+                    subfatura: "001"
+                    codigoBeneficiarioDependente: null
+                    cpdCorretor: "CPD-001"
+                    dataMovimentacaoApolice: "2026-05-15"
+                    sucursalCorretor: "001"
+                    dataNascimento: null
+                    cep: null
+                    empresa: "ACME Industria S/A"
+                    codigoMovimentacao: null
+      responses:
+        '200':
+          description: Movimentação processada ou recebida com sucesso pela fila de integração.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sucesso:
+                    type: boolean
+                    example: true
+                  mensagem:
+                    type: string
+                    example: "Movimentação registrada com sucesso sob a transação guid."
+                  guidProcessamento:
+                    type: string
+                    format: uuid
+                    example: "c9a8b7c6-d5e4-4321-f0ed-ba9876543210"
+        '400':
+          description: Erro na requisição (validação de schema ou inconsistência de regras de negócio).
+        '500':
+          description: Erro interno no Orquestrador ou indisponibilidade da operadora de saúde.
+
+components:
+  schemas:
+    MovimentacaoBase:
+      type: object
+      required:
+        - cnpjProvedor
+        - movimento
+        - login
+        - senha
+        - origem
+      properties:
+        cnpjProvedor:
+          type: string
+          description: CNPJ da Operadora de saúde de destino.
+          example: "99999999999999"
+        movimento:
+          type: string
+          description: |
+            Tipo de movimentação principal executada na requisição Base.
+            * `I` - Inclusão (Requer preencher o array `inclusao`)
+            * `A` - Alteração (Requer preencher o objeto `alteracao`)
+            * `E` - Exclusão (Requer preencher o objeto `exclusao`)
+            * `T` - Troca de Plano (Requer preencher o array `trocaPlano`)
+            * `R` - Reativação (Requer preencher o array `reativacao`)
+            * `C` - Consulta (Requer preencher o objeto `consulta`)
+          enum: [I, A, E, T, R, C]
+          example: "I"
+        login:
+          type: string
+          description: Usuário de autenticação na API da Operadora.
+          example: "MT9999999"
+        senha:
+          type: string
+          description: Senha de autenticação na API da Operadora.
+          example: "********"
+        origem:
+          type: integer
+          description: |
+            Código de origem da transação.
+            * `0` - Origem padrão (Protheus / sistema legível do cliente).
+            * `1` - Outra origem (RPA / integração interna).
+          enum: [0, 1]
+          example: 0
+        guidProdutoBeneficiario:
+          type: string
+          format: uuid
+          nullable: true
+          description: Campo para uso do cliente. Sem efeito operacional no orquestrador.
+          example: "a1b2c3d4-e5f6-7890-abcd-1234567890ab"
+        guidFilaDeIntegracao:
+          type: string
+          format: uuid
+          nullable: true
+          description: Identificador para uso do cliente. Sem efeito operacional no orquestrador.
+          example: "f0e9d8c7-b6a5-4321-fedc-ba9876543210"
+
+        # Estruturas Condicionais de Fluxos
+        inclusao:
+          type: array
+          description: Preenchido se `movimento` for `I`. Array de novos beneficiários para inclusão.
+          items:
+            $ref: '#/components/schemas/BeneficiarioInclusao'
+        alteracao:
+          $ref: '#/components/schemas/BeneficiarioAlteracao'
+        exclusao:
+          $ref: '#/components/schemas/BeneficiarioExclusao'
+        trocaPlano:
+          type: array
+          description: Preenchido se `movimento` for `T`. Contém dados da troca de plano.
+          items:
+            $ref: '#/components/schemas/BeneficiarioTrocaPlano'
+        reativacao:
+          type: array
+          description: Preenchido se `movimento` for `R`. Contém chaves e datas de reativação.
+          items:
+            $ref: '#/components/schemas/BeneficiarioReativacao'
+        consulta:
+          $ref: '#/components/schemas/BeneficiarioConsulta'
+
+    Endereco:
+      type: object
+      properties:
+        cep:
+          type: string
+          example: "01310100"
+        logradouro:
+          type: string
+          example: "Av. Paulista"
+        numero:
+          type: string
+          example: "1000"
+        complemento:
+          type: string
+          nullable: true
+          example: "Apto 101"
+        bairro:
+          type: string
+          example: "Bela Vista"
+        municipio:
+          type: string
+          example: "Sao Paulo"
+        codMunicipio:
+          type: string
+          description: Código IBGE do município do endereço.
+          example: "3550308"
+        codMunicipioNascimentoIbge:
+          type: string
+          description: Código IBGE do município de nascimento.
+          example: "3550308"
+        codMunicipioNascimentoCorreio:
+          type: string
+          example: "01000"
+        uf:
+          type: string
+          maxLength: 2
+          example: "SP"
+        regiao:
+          type: string
+          description: Região geográfica mapeada. Ex. SE (Sudeste).
+          example: "SE"
+
+    Contato:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "joao.silva@acme.com.br"
+        email1:
+          type: string
+          format: email
+          nullable: true
+          example: "joao.pessoal@gmail.com"
+        dddCelular:
+          type: string
+          maxLength: 2
+          example: "11"
+        dddCelular1:
+          type: string
+          maxLength: 2
+          nullable: true
+          example: "11"
+        dddTelefone1:
+          type: string
+          maxLength: 2
+          nullable: true
+          example: "11"
+        telefone1:
+          type: string
+          nullable: true
+          example: "33334444"
+        celular:
+          type: string
+          example: "999998888"
+        celular1:
+          type: string
+          nullable: true
+          example: "988887777"
+        ramalTelefone1:
+          type: string
+          nullable: true
+          example: "1234"
+        ramal:
+          type: string
+          nullable: true
+          example: "5678"
+
+    DadosBancarios:
+      type: object
+      nullable: true
+      properties:
+        banco:
+          type: string
+          description: Código de compensação BACEN do Banco (Ex. 237 = Bradesco).
+          example: "237"
+        agencia:
+          type: string
+          example: "1234"
+        digitoAgencia:
+          type: string
+          nullable: true
+          example: "5"
+        conta:
+          type: string
+          example: "00012345"
+        digitoConta:
+          type: string
+          example: "6"
+        tipoConta:
+          type: string
+          description: |
+            Tipo de conta bancária.
+            * `ContaPoupanca` - Saída Convertida p/ Bradesco: '2'
+            * Qualquer outro valor - Saída Convertida p/ Bradesco: '0' (Conta Corrente)
+          example: "CC"
+        numero:
+          type: string
+          description: Número completo (Conta + Dígito) formatado.
+          example: "00012345-6"
+        tipoOperacao:
+          type: string
+          nullable: true
+          example: "001"
+
+    Produto:
+      type: object
+      properties:
+        contrato:
+          type: string
+          example: "789"
+        carteirinha:
+          type: string
+          nullable: true
+          example: ""
+        subContrato:
+          type: string
+          example: "001"
+        codigo:
+          type: string
+          description: Código identificador do plano corporativo contratado.
+          example: "PLANO-ENF-01"
+        codigoRDP:
+          type: string
+          nullable: true
+          example: "RDP-001"
+        dataAlteracaoPlano:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2026-06-01T00:00:00"
+        dataInicioContrato:
+          type: string
+          format: date-time
+          example: "2026-05-15T00:00:00"
+        motivoAlteracao:
+          type: string
+          nullable: true
+          example: "UPGRADE_VOLUNTARIO"
+
+    Apolice:
+      type: object
+      properties:
+        cia:
+          type: string
+          example: "BRADESCO"
+        numero:
+          type: string
+          example: "123456"
+        subfatura:
+          type: string
+          example: "001"
+
+    BeneficiarioInclusao:
+      type: object
+      properties:
+        operacao:
+          type: string
+          enum: [I]
+          description: Deve possuir o mesmo movimento da requisição Base (`I`).
+        nome:
+          type: string
+          example: "Joao da Silva"
+        nomeAbreviado:
+          type: string
+          example: "JOAO SILVA"
+        cpf:
+          type: string
+          example: "99999999999"
+        dataNascimento:
+          type: string
+          format: date-time
+          example: "1985-03-12T00:00:00"
+        grauParentesco:
+          type: string
+          description: |
+            Grau de Parentesco padrão Protheus:
+            * `0` - Titular (Usado pelo Bradesco para cindir titular de dependentes).
+            * `1` - Cônjuge / Companheiro(a) (Unimed converte para Esposa se `sexo=F` ou Marido se `sexo=M`).
+            * `2` - Filho(a) (Unimed mapeia para Filha se `sexo=F` ou Filho se `sexo=M`).
+            * Outros valores numéricos estruturados são repassados de forma direta.
+          example: "0"
+        estadoCivil:
+          type: string
+          description: |
+            Estado civil do beneficiário:
+            * `S` ou `1` - Solteiro
+            * `C` ou `2` - Casado
+            * `V` ou `3` - Viúvo
+            * Outros caracteres (ex: D, U) - Mapeados como '4' no padrão Bradesco.
+          example: "C"
+        sexo:
+          type: string
+          description: |
+            Sexo Biológico:
+            * `M` - Masculino (Bradesco converte para '1')
+            * `F` - Feminino (Bradesco converte para '2')
+          enum: [M, F]
+          example: "M"
+        nomeMae:
+          type: string
+          example: "Maria da Silva"
+        rg:
+          type: string
+          example: "123456789"
+        orgaoEmissor:
+          type: string
+          example: "SSP"
+        dataExpedicaoRg:
+          type: string
+          format: date-time
+          example: "2005-06-10T00:00:00"
+        pisPasep:
+          type: string
+          example: "12345678901"
+        matriculaFuncionario:
+          type: string
+          example: "EMP000123"
+        matriculaIzii:
+          type: string
+          example: "IZII-000123"
+        dataAdesao:
+          type: string
+          format: date-time
+          example: "2026-05-15T00:00:00"
+        dataAdmissao:
+          type: string
+          format: date-time
+          example: "2026-05-01T00:00:00"
+        dataEvento:
+          type: string
+          format: date-time
+          example: "2026-05-15T10:00:00"
+        horaEvento:
+          type: string
+          example: "10:00"
+        endereco:
+          $ref: '#/components/schemas/Endereco'
+        contato:
+          $ref: '#/components/schemas/Contato'
+        dadosBancarios:
+          $ref: '#/components/schemas/DadosBancarios'
+        produto:
+          $ref: '#/components/schemas/Produto'
+        apolice:
+          $ref: '#/components/schemas/Apolice'
+        altura:
+          type: string
+          example: "175"
+        cargo:
+          type: string
+          example: "Analista de Sistemas"
+        codigoAngariador:
+          type: string
+          example: "ANG-001"
+        cns:
+          type: string
+          description: Cartão Nacional de Saúde (SUS).
+          example: "123456789012345"
+        declaracaoNascidoVivo:
+          type: string
+          nullable: true
+          example: null
+        peso:
+          type: string
+          example: "78"
+        possuiCoberturaParcialTemporaria:
+          type: string
+          enum: [S, N]
+          example: "N"
+        possuiContaCredito:
+          type: string
+          enum: [S, N]
+          example: "N"
+        regiao:
+          type: string
+          description: Mapeamento de regiões (N, NE, S, SE, CO).
+          example: "SE"
+        codigoSucursal:
+          type: string
+          example: "001"
+        cpdCorretor:
+          type: string
+          example: "CPD-001"
+        certificado:
+          type: string
+          example: "CERT-123"
+        dataCasamento:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2010-08-20T00:00:00"
+        codTipoRegistro:
+          type: string
+          example: "01"
+        codFamilia:
+          type: string
+          example: "FAM-001"
+        codDependencia:
+          type: string
+          description: |
+            Código de Dependência calculado automaticamente pela Unimed:
+            * `00` - Titular
+            * `01` - Esposa
+            * `09` - Marido
+            * `10..29` - Filhos
+            * `30..49` - Filhas
+          example: "00"
+        indLayoutOrigem:
+          type: string
+          example: "01"
+        lotacao:
+          type: string
+          example: "Matriz SP"
+        codSetor:
+          type: string
+          example: "TI-001"
+        dataLotacao:
+          type: string
+          format: date-time
+          example: "2026-05-01T00:00:00"
+        dataInicioContribuicao:
+          type: string
+          format: date-time
+          example: "2026-05-01T00:00:00"
+        situacaoEmpresa:
+          type: string
+          example: "ATIVA"
+        codigoFuncao:
+          type: string
+          example: "FN-001"
+        codPaisEmissor:
+          type: string
+          example: "BRA"
+        sequenciaFamilia:
+          type: string
+          example: "01"
+        sequenciaBeneficiario:
+          type: string
+          example: "00"
+        usuario:
+          type: string
+          example: "integrador.izii"
+        tipoProduto:
+          type: string
+          enum: [SAUDE, ODONTO]
+          example: "SAUDE"
+
+    BeneficiarioAlteracao:
+      type: object
+      description: Preenchido se `movimento` for `A`. Objeto com as modificações cadastrais do beneficiário.
+      properties:
+        identificador:
+          type: string
+          example: "EMP000123"
+        dataEvento:
+          type: string
+          format: date-time
+          example: "2026-05-15T10:00:00"
+        operacao:
+          type: string
+          enum: [A]
+        codDependencia:
+          type: string
+          example: "00"
+        nome:
+          type: string
+          example: "Joao da Silva"
+        nomeAbreviado:
+          type: string
+          example: "JOAO SILVA"
+        cpf:
+          type: string
+          example: "12345678901"
+        numSus:
+          type: string
+          nullable: true
+          example: null
+        cns:
+          type: string
+          example: "123456789012345"
+        rg:
+          type: string
+          example: "123456789"
+        orgaoEmissor:
+          type: string
+          example: "SSP"
+        sequencial:
+          type: string
+          example: "01"
+        codPaisEmissor:
+          type: string
+          example: "BRA"
+        dataNascimento:
+          type: string
+          format: date-time
+          example: "1985-03-12T00:00:00"
+        dataAdesao:
+          type: string
+          format: date-time
+          example: "2026-05-15T00:00:00"
+        dataCasamento:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2010-08-20T00:00:00"
+        grauParentesco:
+          type: string
+          example: "0"
+        estadoCivil:
+          type: string
+          example: "C"
+        sexo:
+          type: string
+          enum: [M, F]
+          example: "M"
+        nomeMae:
+          type: string
+          example: "Maria da Silva"
+        pisPasep:
+          type: string
+          example: "12345678901"
+        matriculaOperadora:
+          type: string
+          example: "OPR-000123"
+        lotacao:
+          type: string
+          example: "Matriz SP"
+        codSetor:
+          type: string
+          example: "TI-001"
+        situacaoEmpresa:
+          type: string
+          enum: [ATIVA, INATIVA]
+          example: "ATIVA"
+        codigoFuncao:
+          type: string
+          example: "FN-001"
+        bloqueioInadimplencia:
+          type: boolean
+          example: false
+        dataBloqueioInadimplencia:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        dataAdmissao:
+          type: string
+          format: date-time
+          example: "2026-05-01T00:00:00"
+        dataLotacao:
+          type: string
+          format: date-time
+          example: "2026-05-01T00:00:00"
+        dataInicioContribuicao:
+          type: string
+          format: date-time
+          example: "2026-05-01T00:00:00"
+        endereco:
+          $ref: '#/components/schemas/Endereco'
+        contato:
+          $ref: '#/components/schemas/Contato'
+        dadosBancarios:
+          $ref: '#/components/schemas/DadosBancarios'
+        produto:
+          type: object
+          properties:
+            contrato:
+              type: string
+              example: "789"
+            subContrato:
+              type: string
+              example: "001"
+            codigo:
+              type: string
+              example: "PLANO-ENF-01"
+        altura:
+          type: string
+          example: "175"
+        codigoSucursal:
+          type: string
+          example: "001"
+        cpdCorretor:
+          type: string
+          example: "CPD-001"
+        codigoAngariador:
+          type: string
+          example: "ANG-001"
+        apolice:
+          $ref: '#/components/schemas/Apolice'
+        cargo:
+          type: string
+          example: "Coordenador de Sistemas"
+        certificado:
+          type: string
+          example: "CERT-123"
+        dataExpedicaoRg:
+          type: string
+          format: date-time
+          example: "2005-06-10T00:00:00"
+        declaracaoNascidoVivo:
+          type: string
+          nullable: true
+          example: null
+        peso:
+          type: string
+          example: "78"
+        possuiCobertarParcialTemporaria:
+          type: string
+          enum: [S, N]
+          example: "N"
+        possuiContaCredito:
+          type: string
+          enum: [S, N]
+          example: "N"
+        regiao:
+          type: string
+          example: "SE"
+        registroProposta:
+          type: string
+          example: "RP-001"
+        codigoSegurado:
+          type: string
+          example: "SEG-000123"
+        sequenciaOperadora:
+          type: string
+          example: "01"
+        usuario:
+          type: string
+          example: "integrador.izii"
+
+    BeneficiarioExclusao:
+      type: object
+      description: Preenchido se `movimento` for `E`. Objeto contendo os dados de cancelamento/desligamento.
+      properties:
+        motivoExclusao:
+          type: string
+          description: |
+            Código ANS padrão para o motivo de exclusão:
+            * `01` - Óbito
+            * `02` - Exoneração
+            * `03` - Aposentadoria
+            * `04` - Cancelamento por inadimplência
+            * `05` - Solicitação do beneficiário
+            * `06` - Demissão
+            * `07` - Perda de vínculo
+            * `99` - Outros
+          enum: ["01", "02", "03", "04", "05", "06", "07", "99"]
+          example: "06"
+        dataExclusao:
+          type: string
+          format: date-time
+          example: "2026-05-31T00:00:00"
+        flagContributario:
+          type: boolean
+          example: false
+        matriculaOperadora:
+          type: string
+          example: "OPR-000123"
+        matriculaEmpresa:
+          type: string
+          example: "EMP000123"
+        tipoProduto:
+          type: string
+          enum: [SAUDE, ODONTO]
+          example: "SAUDE"
+        produto:
+          type: object
+          properties:
+            contrato:
+              type: string
+              example: "789"
+            subContrato:
+              type: string
+              example: "001"
+            codigo:
+              type: string
+              example: "PLANO-ENF-01"
+        apolice:
+          type: string
+          example: "123456"
+        certificado:
+          type: string
+          example: "CERT-123"
+        codigoSegurado:
+          type: string
+          example: "SEG-000123"
+        codigoSucursal:
+          type: string
+          example: "001"
+        cpdCorretor:
+          type: string
+          example: "CPD-001"
+        operacao:
+          type: string
+          enum: [E]
+        codDependencia:
+          type: string
+          example: "00"
+        nome:
+          type: string
+          example: "Joao da Silva"
+        nomeAbreviado:
+          type: string
+          example: "JOAO SILVA"
+        cpf:
+          type: string
+          example: "12345678901"
+        numSus:
+          type: string
+          nullable: true
+          example: null
+        rg:
+          type: string
+          example: "123456789"
+        orgaoEmissor:
+          type: string
+          example: "SSP"
+        codPaisEmissor:
+          type: string
+          example: "BRA"
+        dataNascimento:
+          type: string
+          format: date-time
+          example: "1985-03-12T00:00:00"
+        dataAdesao:
+          type: string
+          format: date-time
+          example: "2026-05-15T00:00:00"
+        dataCasamento:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2010-08-20T00:00:00"
+        grauParentesco:
+          type: string
+          example: "0"
+        estadoCivil:
+          type: string
+          example: "C"
+        sexo:
+          type: string
+          enum: [M, F]
+          example: "M"
+        nomeMae:
+          type: string
+          example: "Maria da Silva"
+        pisPasep:
+          type: string
+          example: "12345678901"
+        lotacao:
+          type: string
+          example: "Matriz SP"
+        codSetor:
+          type: string
+          example: "TI-001"
+        situacaoEmpresa:
+          type: string
+          example: "ATIVA"
+        codigoFuncao:
+          type: string
+          example: "FN-001"
+        bloqueioInadimplencia:
+          type: boolean
+          example: false
+        dataBloqueioInadimplencia:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        dataAdmissao:
+          type: string
+          format: date-time
+          example: "2026-05-01T00:00:00"
+        dataLotacao:
+          type: string
+          format: date-time
+          example: "2026-05-01T00:00:00"
+        dataInicioContribuicao:
+          type: string
+          format: date-time
+          example: "2026-05-01T00:00:00"
+        endereco:
+          type: object
+          properties:
+            cep:
+              type: string
+              example: "01310100"
+            logradouro:
+              type: string
+              example: "Av. Paulista"
+            numero:
+              type: string
+              example: "1000"
+            complemento:
+              type: string
+              nullable: true
+              example: "Apto 101"
+            bairro:
+              type: string
+              example: "Bela Vista"
+            municipio:
+              type: string
+              example: "Sao Paulo"
+            uf:
+              type: string
+              example: "SP"
+        contato:
+          type: object
+          properties:
+            email:
+              type: string
+              example: "joao.silva@acme.com.br"
+            dddCelular:
+              type: string
+              example: "11"
+            celular:
+              type: string
+              example: "999998888"
+        dadosBancarios:
+          type: object
+          nullable: true
+        altura:
+          type: string
+          example: "175"
+        codigoAngariador:
+          type: string
+          example: "ANG-001"
+        cargo:
+          type: string
+          example: "Analista de Sistemas"
+        dataExpedicaoRg:
+          type: string
+          format: date-time
+          example: "2005-06-10T00:00:00"
+        declaracaoNascidoVivo:
+          type: string
+          nullable: true
+          example: null
+        peso:
+          type: string
+          example: "78"
+        possuiCoberturaParcialTemporaria:
+          type: string
+          enum: [S, N]
+          example: "N"
+        possuiContaCredito:
+          type: string
+          enum: [S, N]
+          example: "N"
+        regiao:
+          type: string
+          example: "SE"
+        registroProposta:
+          type: string
+          example: "RP-001"
+        codTipoRegistro:
+          type: string
+          example: "01"
+        codFamilia:
+          type: string
+          example: "FAM-001"
+        indLayoutOrigem:
+          type: string
+          example: "01"
+        sequenciaOperadora:
+          type: string
+          example: "01"
+        usuario:
+          type: string
+          example: "integrador.izii"
+        codigoRDP:
+          type: string
+          example: "RDP-001"
+
+    BeneficiarioTrocaPlano:
+      type: object
+      properties:
+        operacao:
+          type: string
+          enum: [T]
+        indLayoutOrigem:
+          type: string
+          example: "01"
+        codFamilia:
+          type: string
+          example: "FAM-001"
+        codDependencia:
+          type: string
+          example: "00"
+        nome:
+          type: string
+          example: "Joao da Silva"
+        sexo:
+          type: string
+          enum: [M, F]
+          example: "M"
+        estadoCivil:
+          type: string
+          example: "C"
+        dataNascimento:
+          type: string
+          format: date-time
+          example: "1985-03-12T00:00:00"
+        dataAdesao:
+          type: string
+          format: date-time
+          example: "2026-05-15T00:00:00"
+        dataCasamento:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2010-08-20T00:00:00"
+        nomeMae:
+          type: string
+          example: "Maria da Silva"
+        cpf:
+          type: string
+          example: "12345678901"
+        pisPasep:
+          type: string
+          example: "12345678901"
+        cns:
+          type: string
+          example: "123456789012345"
+        rg:
+          type: string
+          example: "123456789"
+        orgaoEmissor:
+          type: string
+          example: "SSP"
+        codPaisEmissor:
+          type: string
+          example: "BRA"
+        lotacao:
+          type: string
+          example: "Matriz SP"
+        dataLotacao:
+          type: string
+          format: date-time
+          example: "2026-05-01T00:00:00"
+        dataAdmissao:
+          type: string
+          format: date-time
+          example: "2026-05-01T00:00:00"
+        codSetor:
+          type: string
+          example: "TI-001"
+        situacaoEmpresa:
+          type: string
+          example: "ATIVA"
+        matriculaFuncionario:
+          type: string
+          example: "EMP000123"
+        dataInicioContribuicao:
+          type: string
+          format: date-time
+          example: "2026-05-01T00:00:00"
+        codigoFuncao:
+          type: string
+          example: "FN-001"
+        endereco:
+          type: object
+          properties:
+            cep:
+              type: string
+              example: "01310100"
+            logradouro:
+              type: string
+              example: "Av. Paulista"
+            numero:
+              type: string
+              example: "1000"
+            bairro:
+              type: string
+              example: "Bela Vista"
+            municipio:
+              type: string
+              example: "Sao Paulo"
+            uf:
+              type: string
+              example: "SP"
+        contato:
+          type: object
+          properties:
+            email:
+              type: string
+              example: "joao.silva@acme.com.br"
+            dddCelular:
+              type: string
+              example: "11"
+            celular:
+              type: string
+              example: "999998888"
+        dadosBancarios:
+          type: object
+          nullable: true
+        produto:
+          $ref: '#/components/schemas/Produto'
+
+    BeneficiarioReativacao:
+      type: object
+      properties:
+        codTipoRegistro:
+          type: string
+          example: "01"
+        operacao:
+          type: string
+          enum: [R]
+        codDependencia:
+          type: string
+          example: "00"
+        matriculaFuncionario:
+          type: string
+          example: "EMP000123"
+        cpf:
+          type: string
+          example: "12345678901"
+        dataReativacao:
+          type: string
+          format: date-time
+          example: "2026-05-20T00:00:00"
+        produto:
+          type: object
+          properties:
+            contrato:
+              type: string
+              example: "789"
+            subContrato:
+              type: string
+              example: "001"
+            codigo:
+              type: string
+              example: "PLANO-ENF-01"
+            dataInicioContrato:
+              type: string
+              format: date-time
+              example: "2026-05-15T00:00:00"
+
+    BeneficiarioConsulta:
+      type: object
+      description: Preenchido se `movimento` for `C`. Parametros de filtragem para listagem ou busca do beneficiário.
+      properties:
+        apolice:
+          type: string
+          example: "123456"
+        pagina:
+          type: string
+          example: "1"
+        quantidadePorPagina:
+          type: string
+          example: "50"
+        usuario:
+          type: string
+          example: "integrador.izii"
+        cia:
+          type: string
+          example: "BRADESCO"
+        cnpj:
+          type: string
+          example: "12345678000199"
+        dependente:
+          type: string
+          nullable: true
+          example: null
+        matriculaEspecial:
+          type: string
+          nullable: true
+          example: null
+        certificado:
+          type: string
+          nullable: true
+          example: null
+        numeroCartao:
+          type: string
+          nullable: true
+          example: null
+        nome:
+          type: string
+          nullable: true
+          example: null
+        cpf:
+          type: string
+          example: "12345678901"
+        cpfDependente:
+          type: string
+          nullable: true
+          example: null
+        subfatura:
+          type: string
+          example: "001"
+        codigoBeneficiarioDependente:
+          type: string
+          nullable: true
+          example: null
+        cpdCorretor:
+          type: string
+          example: "CPD-001"
+        dataMovimentacaoApolice:
+          type: string
+          format: date
+          example: "2026-05-15"
+        sucursalCorretor:
+          type: string
+          example: "001"
+        dataNascimento:
+          type: string
+          nullable: true
+          example: null
+        cep:
+          type: string
+          nullable: true
+          example: null
+        empresa:
+          type: string
+          example: "ACME Industria S/A"
+        codigoMovimentacao:
+          type: string
+          nullable: true
+          example: null
+
