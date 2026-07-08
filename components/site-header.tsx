@@ -19,6 +19,9 @@ export function SiteHeader() {
           <Link href="/#apis" className="transition hover:text-izii-charcoal dark:hover:text-white">
             APIs
           </Link>
+          <Link href="/arquitetura" className="transition hover:text-izii-charcoal dark:hover:text-white">
+            A Solução
+          </Link>
         </nav>
         <div className="flex-1" />
         <Link

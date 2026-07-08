@@ -72,11 +72,11 @@
 
 @layer utilities {
   .text-gradient {
-    @apply bg-gradient-to-br from-izii-charcoal via-izii-charcoal to-izii-green bg-clip-text text-transparent;
+    @apply bg-gradient-to-br from-izii-charcoal via-izii-charcoal to-izii-green bg-clip-text text-transparent dark:bg-none dark:text-izii-green;
   }
 
   .text-gradient-accent {
-    @apply bg-gradient-to-r from-izii-dark via-izii-green to-izii-lime bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-izii-dark via-izii-green to-izii-lime bg-clip-text text-transparent dark:bg-none dark:text-izii-green;
   }
 
   .border-glow {
