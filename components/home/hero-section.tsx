@@ -39,7 +39,7 @@ export function HeroSection() {
         <motion.p
           {...fadeUp}
           transition={{ duration: 0.55, delay: 0.16 }}
-          className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-600 md:text-lg"
+          className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-600 md:text-lg dark:text-slate-300"
         >
           
           Nossos anos de experiência em integração com operadoras de saúde nos garantem uma solução robusta e escalável para suas necessidades, agora disponível para você via APIs
