@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: IZII MDS — Orquestrador de Benefícios (REST)
+  title: IZII API— Orquestrador de Benefícios (REST)
   version: "2.0.0"
   description: |
     API **RESTful** do Orquestrador de Benefícios da Izii — o *Hub de Integração

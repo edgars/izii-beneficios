@@ -4,10 +4,13 @@ const nextConfig = {
   outputFileTracingIncludes: {
     "*": ["specs/**/*", "content/**/*"]
   },
-  // Prevents "multiple copies of React" error when next-mdx-remote/rsc
-  // compiles MDX at prerender time. Keeps its react/jsx-runtime import
-  // resolving to the same copy Next.js uses.
-  serverExternalPackages: ["next-mdx-remote"],
+  // Next.js 15: prevent bundling these packages so their react/jsx-runtime
+  // import resolves to the same copy Next.js uses (avoids "older React" error).
+  serverExternalPackages: ["next-mdx-remote", "@mdx-js/mdx"],
+  // Next.js 14 equivalent of the above (safe to keep both).
+  experimental: {
+    serverComponentsExternalPackages: ["next-mdx-remote", "@mdx-js/mdx"],
+  },
 };
 
 export default nextConfig;

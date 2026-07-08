@@ -2,14 +2,11 @@ import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import { mdxComponents } from "@/components/mdx/mdx-components";
-import { getGuide, listGuides } from "@/lib/mdx/guides";
+import { getGuide } from "@/lib/mdx/guides";
 
-export const revalidate = 3600;
-
-export async function generateStaticParams() {
-  const guides = await listGuides();
-  return guides.map((g) => ({ slug: g.slug }));
-}
+// Force dynamic rendering — prevents Next.js from prerendering MDX pages at
+// build time, which avoids the "multiple React copies" error from next-mdx-remote.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
