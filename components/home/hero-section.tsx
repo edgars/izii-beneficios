@@ -31,9 +31,9 @@ export function HeroSection() {
           transition={{ duration: 0.55, delay: 0.08 }}
           className="text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
         >
-          <span className="text-gradient">Construa integrações</span>
+          <span className="text-gradient">Integrações com  </span>
           <br />
-          <span className="text-gradient-accent">com confiança e velocidade</span>
+          <span className="text-gradient-accent">operadoras de saúde</span>
         </motion.h1>
 
         <motion.p
@@ -41,7 +41,8 @@ export function HeroSection() {
           transition={{ duration: 0.55, delay: 0.16 }}
           className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-600 md:text-lg"
         >
-          Utilize nossas APIs para integrar com diversas operadoras de saúde e seus serviços relacionados.
+          
+          Nossos anos de experiência em integração com operadoras de saúde nos garantem uma solução robusta e escalável para suas necessidades, agora disponível para você via APIs
         </motion.p>
 
         <motion.div

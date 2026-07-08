@@ -27,7 +27,7 @@ export function ApiPremiumSelector({ apis }: { apis: ApiWithMeta[] }) {
           <p className="mt-2 text-sm text-slate-500">Selecione uma API para explorar endpoints, schemas e playground.</p>
         </motion.div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2">
           {apis.map((api, index) => (
             <motion.div
               key={api.id}
